@@ -1,15 +1,18 @@
-import { StrictMode, Component, ErrorInfo, ReactNode } from 'react';
+import React, { ReactNode, Component, ErrorInfo } from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 import './index.css';
 
-// --- Error Boundary Component ---
+// ============================================================
+// Global Error Boundary Component
+// Catches all React errors and prevents blank screen crashes
+// ============================================================
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
 }
 
-class RootErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
+class GlobalErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -17,8 +20,13 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundary
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('WorkPlex Fatal Error:', error, errorInfo);
+    console.error('[GlobalErrorBoundary] Uncaught Error:', error);
+    console.error('[GlobalErrorBoundary] Component Stack:', errorInfo.componentStack);
   }
+
+  private handleRefresh = () => {
+    window.location.reload();
+  };
 
   render() {
     if (this.state.hasError) {
@@ -26,73 +34,57 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundary
         <div style={{
           minHeight: '100vh',
           background: '#0A0A0A',
-          color: '#ffffff',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           padding: '2rem',
           fontFamily: 'system-ui, -apple-system, sans-serif',
+          color: '#ffffff',
           textAlign: 'center'
         }}>
-          <div style={{
-            width: '80px',
-            height: '80px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            borderRadius: '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '24px',
-            border: '1px solid rgba(239, 68, 68, 0.2)'
-          }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
-          </div>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>Something went wrong</h1>
-          <p style={{ color: '#9ca3af', marginBottom: '24px', maxWidth: '400px' }}>
-            We've encountered an unexpected error. Please try refreshing the page.
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: '1.5rem' }}>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Something Went Wrong</h1>
+          <p style={{ color: '#9CA3AF', marginBottom: '1.5rem', maxWidth: '24rem' }}>
+            {this.state.error?.message || 'An unexpected error occurred while loading the application.'}
           </p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={this.handleRefresh}
             style={{
               background: '#E8B84B',
               color: '#000000',
-              fontWeight: 'bold',
-              padding: '16px 32px',
-              borderRadius: '16px',
+              fontWeight: 600,
+              padding: '0.75rem 1.5rem',
+              borderRadius: '0.5rem',
               border: 'none',
               cursor: 'pointer',
-              fontSize: '16px'
+              fontSize: '0.875rem',
+              transition: 'transform 0.1s ease'
             }}
+            onMouseDown={(e) => (e.currentTarget.style.transform = 'scale(0.95)')}
+            onMouseUp={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
             Refresh Application
           </button>
-          {import.meta.env.DEV && this.state.error && (
-            <details style={{
-              marginTop: '32px',
-              padding: '16px',
-              background: '#000000',
-              border: '1px solid #374151',
-              borderRadius: '12px',
-              textAlign: 'left',
-              maxWidth: '600px',
-              width: '100%'
-            }}>
-              <summary style={{ cursor: 'pointer', color: '#ef4444', fontWeight: 'bold' }}>
-                Error Details (Development)
-              </summary>
+          {import.meta.env.DEV && (
+            <details style={{ marginTop: '2rem', maxWidth: '48rem', width: '100%', textAlign: 'left' }}>
+              <summary style={{ cursor: 'pointer', color: '#6B7280', fontSize: '0.75rem' }}>Error Details (Development)</summary>
               <pre style={{
-                marginTop: '12px',
-                fontSize: '12px',
-                color: '#f87171',
+                marginTop: '0.5rem',
+                background: '#111827',
+                padding: '1rem',
+                borderRadius: '0.5rem',
                 overflow: 'auto',
-                whiteSpace: 'pre-wrap'
+                fontSize: '0.75rem',
+                color: '#EF4444',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
               }}>
-                {this.state.error.toString()}
+                {this.state.error?.stack}
               </pre>
             </details>
           )}
@@ -104,19 +96,54 @@ class RootErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundary
   }
 }
 
-// --- App Initialization ---
+// ============================================================
+// Initialization
+// ============================================================
+console.log('[WorkPlex] Initialization Start');
+
 const rootElement = document.getElementById('root');
 
-if (rootElement) {
-  const root = createRoot(rootElement);
+if (!rootElement) {
+  throw new Error('Failed to find the root element in index.html');
+}
+
+try {
+  const root = createRoot(rootElement!);
 
   root.render(
-    <StrictMode>
-      <RootErrorBoundary>
+    <React.StrictMode>
+      <GlobalErrorBoundary>
         <App />
-      </RootErrorBoundary>
-    </StrictMode>
+      </GlobalErrorBoundary>
+    </React.StrictMode>
   );
-} else {
-  console.error('WorkPlex: #root element not found in DOM');
+
+  console.log('[WorkPlex] React rendering complete');
+} catch (error: unknown) {
+  console.error('[WorkPlex] Fatal initialization error:', error);
+
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error during initialization';
+
+  document.getElementById('root')!.innerHTML = `
+    <div style="min-height:100vh;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;font-family:system-ui,-apple-system,sans-serif;color:#ffffff;text-align:center;">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1.5rem;">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="12" />
+        <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;">Fatal Error</h1>
+      <p style="color:#9CA3AF;margin-bottom:1.5rem;max-width:24rem;">${errorMessage}</p>
+      <button onclick="window.location.reload()" style="background:#E8B84B;color:#000000;font-weight:600;padding:0.75rem 1.5rem;border-radius:0.5rem;border:none;cursor:pointer;font-size:0.875rem;">Refresh Application</button>
+    </div>
+  `;
 }
+
+// Remove splash screen when React is ready
+window.addEventListener('load', () => {
+  const splash = document.getElementById('workplex-splash');
+  if (splash) {
+    splash.style.opacity = '0';
+    splash.style.transition = 'opacity 0.4s ease-out';
+    setTimeout(() => splash.remove(), 500);
+  }
+});

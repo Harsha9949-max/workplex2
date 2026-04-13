@@ -15,9 +15,20 @@
   <meta name="apple-mobile-web-app-title" content="WorkPlex" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- CSS-Only Splash Screen / Loader -->
+  <!-- Preload critical fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
+  <!-- ============================================================
+       Professional Splash Screen Styles
+       Displayed while React hydrates - automatically removed on load
+       ============================================================ -->
   <style>
-    * {
+    *,
+    *::before,
+    *::after {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
@@ -25,148 +36,228 @@
 
     body {
       background: #0A0A0A;
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      overflow: hidden;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    #splash-screen {
+    /* Splash Screen Container */
+    #workplex-splash {
       position: fixed;
       inset: 0;
-      background: linear-gradient(135deg, #0A0A0A 0%, #111111 50%, #0A0A0A 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 9999;
-      transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+      background: radial-gradient(ellipse at center, #1a1a2e 0%, #0A0A0A 70%);
+      z-index: 99999;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      will-change: opacity;
     }
 
-    #splash-screen.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
+    /* Logo Container */
+    .splash-logo-container {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      margin-bottom: 2rem;
     }
 
-    .splash-logo {
-      width: 80px;
-      height: 80px;
-      background: linear-gradient(135deg, #E8B84B 0%, #F5C95C 100%);
-      border-radius: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 32px;
-      box-shadow: 0 0 40px rgba(232, 184, 75, 0.3);
-      animation: pulse-glow 2s ease-in-out infinite;
-    }
-
-    .splash-logo svg {
-      width: 48px;
-      height: 48px;
-    }
-
-    .splash-title {
-      color: #ffffff;
-      font-size: 32px;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
-    }
-
-    .splash-subtitle {
-      color: #6b7280;
-      font-size: 14px;
-      margin-bottom: 48px;
-    }
-
-    .splash-loader {
-      width: 48px;
-      height: 48px;
-      border: 3px solid rgba(232, 184, 75, 0.1);
-      border-top-color: #E8B84B;
+    /* Logo Glow Effect */
+    .splash-logo-glow {
+      position: absolute;
+      inset: -12px;
+      background: radial-gradient(circle, rgba(232, 184, 75, 0.3) 0%, transparent 70%);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: pulseGlow 2s ease-in-out infinite;
     }
 
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+    /* Logo SVG */
+    .splash-logo {
+      position: relative;
+      width: 96px;
+      height: 96px;
+      animation: logoFloat 3s ease-in-out infinite;
     }
 
-    @keyframes pulse-glow {
+    /* Title */
+    .splash-title {
+      font-size: 2.25rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #E8B84B 0%, #F5D78E 50%, #E8B84B 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    /* Subtitle */
+    .splash-subtitle {
+      font-size: 0.875rem;
+      color: #6B7280;
+      font-weight: 400;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+    }
+
+    /* Loading Bar */
+    .splash-loader {
+      width: 120px;
+      height: 3px;
+      background: rgba(232, 184, 75, 0.1);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .splash-loader-bar {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 40%;
+      background: linear-gradient(90deg, transparent, #E8B84B, transparent);
+      border-radius: 999px;
+      animation: loadingSlide 1.5s ease-in-out infinite;
+    }
+
+    /* Animations */
+    @keyframes pulseGlow {
 
       0%,
       100% {
-        box-shadow: 0 0 30px rgba(232, 184, 75, 0.3);
+        opacity: 0.5;
+        transform: scale(1);
       }
 
       50% {
-        box-shadow: 0 0 50px rgba(232, 184, 75, 0.6);
+        opacity: 1;
+        transform: scale(1.1);
       }
+    }
+
+    @keyframes logoFloat {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes loadingSlide {
+      0% {
+        left: -40%;
+      }
+
+      100% {
+        left: 100%;
+      }
+    }
+
+    /* Hide splash when fading out */
+    #workplex-splash.fade-out {
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
 
 <body>
+  <!-- Root element with embedded splash screen -->
   <div id="root">
-    <!-- CSS-Only Splash Screen -->
-    <div id="splash-screen">
-      <div class="splash-logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round"
-          stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+    <!-- ============================================================
+         High-End SVG Splash Screen
+         Automatically removed when React hydrates
+         ============================================================ -->
+    <div id="workplex-splash">
+      <div class="splash-logo-container">
+        <div class="splash-logo-glow"></div>
+        <svg class="splash-logo" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Shield Base -->
+          <path d="M48 4L84 18V46C84 68 68 86 48 92C28 86 12 68 12 46V18L48 4Z" fill="url(#shieldGradient)"
+            stroke="#E8B84B" stroke-width="2" />
+          <!-- Inner Shield -->
+          <path d="M48 12L76 24V46C76 64 62 78 48 84C34 78 20 64 20 46V24L48 12Z" fill="url(#innerGradient)"
+            opacity="0.6" />
+          <!-- W Letter -->
+          <path d="M32 36L40 52L48 36L56 52L64 36" stroke="#000000" stroke-width="4" stroke-linecap="round"
+            stroke-linejoin="round" />
+          <!-- Accent Dots -->
+          <circle cx="48" cy="68" r="4" fill="#E8B84B" />
+          <!-- Gradients -->
+          <defs>
+            <linearGradient id="shieldGradient" x1="12" y1="4" x2="84" y2="92">
+              <stop offset="0%" stop-color="#F5D78E" />
+              <stop offset="50%" stop-color="#E8B84B" />
+              <stop offset="100%" stop-color="#D4A03C" />
+            </linearGradient>
+            <linearGradient id="innerGradient" x1="20" y1="12" x2="76" y2="84">
+              <stop offset="0%" stop-color="#FFF7E6" />
+              <stop offset="100%" stop-color="#E8B84B" />
+            </linearGradient>
+          </defs>
         </svg>
       </div>
-      <div class="splash-title">WorkPlex</div>
-      <div class="splash-subtitle">HVRS Innovations</div>
-      <div class="splash-loader"></div>
+
+      <h1 class="splash-title">WorkPlex</h1>
+      <p class="splash-subtitle">HVRS Innovations</p>
+
+      <div class="splash-loader">
+        <div class="splash-loader-bar"></div>
+      </div>
     </div>
   </div>
+
+  <!-- ============================================================
+       Main Application Entry Point
+       Using ES Module for Vite HMR support
+       ============================================================ -->
   <script type="module" src="/src/main.tsx"></script>
 
-  <!-- PWA Service Worker Registration -->
+  <!-- ============================================================
+       PWA Service Worker Registration
+       Forces hard refresh when new Service Worker is detected
+       ============================================================ -->
   <script>
-    // Register Service Worker with cache-busting
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
         try {
           const registration = await navigator.serviceWorker.register('/sw.js', {
             scope: '/'
           });
-          console.log('SW registered:', registration.scope);
 
-          // Check for updates
+          console.log('[WorkPlex PWA] Service Worker registered:', registration.scope);
+
+          // Check for updates and force hard refresh
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // New version available
-                  console.log('New version available, refreshing...');
-                  window.location.reload();
-                }
-              });
-            }
+            if (!newWorker) return;
+
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New version available - force hard refresh
+                console.log('[WorkPlex PWA] New version available, refreshing...');
+                window.location.reload();
+              }
+            });
+          });
+
+          // Handle controller state change for instant updates
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            console.log('[WorkPlex PWA] Controller changed, reloading...');
+            window.location.reload();
           });
         } catch (error) {
-          console.error('SW registration failed:', error);
+          console.error('[WorkPlex PWA] Service Worker registration failed:', error);
         }
       });
     }
-
-    // Hide splash screen after app loads
-    window.addEventListener('load', () => {
-      const splash = document.getElementById('splash-screen');
-      if (splash) {
-        // Wait a bit for React to hydrate
-        setTimeout(() => {
-          splash.classList.add('fade-out');
-          // Remove from DOM after transition
-          setTimeout(() => splash.remove(), 500);
-        }, 300);
-      }
-    });
   </script>
 </body>
 

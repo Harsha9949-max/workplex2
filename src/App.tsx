@@ -526,6 +526,16 @@ class ErrorBoundary extends React.Component<any, any> {
 }
 
 export default function App() {
+  // Remove splash screen when React is confirmed active
+  useEffect(() => {
+    const splash = document.getElementById('workplex-splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      splash.style.transition = 'opacity 0.4s ease-out';
+      setTimeout(() => splash.remove(), 500);
+    }
+  }, []);
+
   return (
     <ErrorBoundary>
       <Router>
