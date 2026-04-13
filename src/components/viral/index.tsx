@@ -611,9 +611,14 @@ export const usePushNotifications = (userId) => {
       try {
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           const registration = await navigator.serviceWorker.ready;
+          const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
+          if (!vapidKey) {
+            console.warn('VITE_VAPID_PUBLIC_KEY not set, skipping push subscription');
+            return;
+          }
           const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(process.env.VITE_VAPID_PUBLIC_KEY),
+            applicationServerKey: urlBase64ToUint8Array(vapidKey),
           });
 
           // Save subscription to Firestore
