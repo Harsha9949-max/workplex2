@@ -1,10 +1,10 @@
 {
-  "projectId": "studio-1168430589-ca062",
-  "appId": "1:870984948986:web:b996aa1c118a3a8097fd43",
-  "apiKey": "AIzaSyCkI4lq-sbReLVgAK0gdAZN8kgwF-2INxQ",
-  "authDomain": "studio-1168430589-ca062.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-044081b2-daef-4b0e-8c73-6b9856b637fa",
-  "storageBucket": "studio-1168430589-ca062.firebasestorage.app",
-  "messagingSenderId": "870984948986",
+  "projectId": "workplex02",
+  "appId": "1:276501398824:web:b4ef9793e3df40b31a7c1d",
+  "apiKey": "AIzaSyCxmWuRnsG4rN38U2HEI-is8-QrSs1nNGw",
+  "authDomain": "workplex02.firebaseapp.com",
+  "firestoreDatabaseId": "(default)",
+  "storageBucket": "workplex02.firebasestorage.app",
+  "messagingSenderId": "276501398824",
   "measurementId": ""
 }
