@@ -79,7 +79,7 @@ import {
   LEVELS
 } from './components/Gamification';
 import { motion, AnimatePresence } from 'framer-motion';
-import CryptoJS from 'crypto-js';
+import * as CryptoJS from 'crypto-js';
 import {
   Phone,
   User,

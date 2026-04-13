@@ -1,4 +1,4 @@
-import CryptoJS from 'crypto-js';
+import * as CryptoJS from 'crypto-js';
 
 const AES_SECRET = 'HVRS-WorkPlex-AES-2024';
 
