@@ -1,63 +1,155 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME = 'workplex-v1';
+const CACHE_NAME = 'workplex-v2';
 const OFFLINE_URL = '/offline.html';
 
-const ASSETS_TO_CACHE = [
+// Critical assets to cache immediately (small, essential)
+const CRITICAL_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/src/main.tsx',
 ];
 
-// Install event
+// Non-critical assets to cache in background (larger files)
+const ASSETS_TO_CACHE = [
+  '/src/main.tsx',
+  '/src/index.css',
+];
+
+// ============================================================
+// Install Event - Cache critical assets immediately
+// ============================================================
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[SW] Caching critical assets');
+      // Cache critical assets first (fast load)
+      return cache.addAll(CRITICAL_ASSETS).then(() => {
+        // Cache non-critical in background (don't block install)
+        cache.addAll(ASSETS_TO_CACHE).catch(() => { });
+      });
+    }).catch(err => console.error('[SW] Cache install failed:', err))
   );
+  // Skip waiting to activate immediately
   self.skipWaiting();
 });
 
-// Activate event
+// ============================================================
+// Activate Event - Clean old caches
+// ============================================================
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) =>
       Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       )
-    )
+    ).catch(err => console.error('[SW] Cache cleanup failed:', err))
   );
+  // Take control immediately
   self.clients.claim();
 });
 
-// Fetch event
+// ============================================================
+// Fetch Event - Optimized caching strategy
+// ============================================================
 self.addEventListener('fetch', (event) => {
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  event.respondWith(
-    fetch(event.request)
-      .then((response) => {
-        // Cache successful responses
-        if (response && response.status === 200) {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
-        return response;
-      })
-      .catch(() => {
-        // Return cached version or offline page
-        return caches.match(event.request).then((cached) => {
-          return cached || caches.match(OFFLINE_URL);
-        });
-      })
-  );
+  // Skip chrome-extension and other non-http requests
+  if (!event.request.url.startsWith('http')) return;
+
+  // Network-first strategy for API calls (always fresh data)
+  if (event.request.url.includes('/api/') ||
+    event.request.url.includes('firebaseio.com') ||
+    event.request.url.includes('firestore.googleapis.com')) {
+    event.respondWith(networkFirst(event.request));
+    return;
+  }
+
+  // Cache-first strategy for static assets (instant load)
+  if (event.request.url.includes('/assets/') ||
+    event.request.url.includes('/static/') ||
+    event.request.url.includes('.css') ||
+    event.request.url.includes('.js')) {
+    event.respondWith(cacheFirst(event.request));
+    return;
+  }
+
+  // Stale-while-revalidate for HTML pages (fast + eventually fresh)
+  event.respondWith(staleWhileRevalidate(event.request));
 });
 
-// Push notification handler
+// ============================================================
+// Caching Strategies
+// ============================================================
+
+// Cache First - Fastest for static assets
+async function cacheFirst(request) {
+  try {
+    const cached = await caches.match(request);
+    if (cached) {
+      console.log('[SW] Cache hit:', request.url);
+      return cached;
+    }
+
+    // Not in cache, fetch from network
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.error('[SW] Cache-first failed:', error);
+    return caches.match('/');
+  }
+}
+
+// Network First - Always fresh for dynamic content
+async function networkFirst(request) {
+  try {
+    const response = await fetch(request);
+    if (response && response.status === 200) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    console.log('[SW] Network failed, using cache');
+    const cached = await caches.match(request);
+    return cached || new Response(JSON.stringify({ error: 'Offline' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// Stale While Revalidate - Fast + eventually fresh
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
+
+  // Fetch from network in background
+  const fetchPromise = fetch(request).then((response) => {
+    if (response && response.status === 200) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  }).catch(() => null);
+
+  // Return cached version immediately, or wait for network
+  return cached || fetchPromise || caches.match('/');
+}
+
+// ============================================================
+// Push Notification Handler
+// ============================================================
 self.addEventListener('push', (event) => {
   const data = event.data?.json() || {};
 
@@ -81,7 +173,9 @@ self.addEventListener('push', (event) => {
   event.waitUntil(self.registration.showNotification(data.title || 'WorkPlex', options));
 });
 
-// Notification click handler
+// ============================================================
+// Notification Click Handler
+// ============================================================
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
@@ -91,14 +185,28 @@ self.addEventListener('notificationclick', (event) => {
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      // Check if app is already open
       for (const client of windowClients) {
         if (client.url.includes(urlToOpen)) {
           return client.focus();
         }
       }
-      // Open new window
       return clients.openWindow(urlToOpen);
     })
   );
 });
+
+// ============================================================
+// Background Sync for Offline Actions
+// ============================================================
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-pending-actions') {
+    event.waitUntil(syncPendingActions());
+  }
+});
+
+async function syncPendingActions() {
+  // Sync offline actions when connection is restored
+  console.log('[SW] Syncing pending actions');
+}
+
+console.log('[SW] Service Worker loaded - optimized for performance');

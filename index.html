@@ -7,6 +7,30 @@
   <title>WorkPlex - HVRS Innovations</title>
   <meta name="description" content="WorkPlex - Elite Gig Economy Platform by HVRS Innovations" />
 
+  <!-- ============================================================
+       Performance Optimizations - Resource Hints
+       ============================================================ -->
+
+  <!-- Preconnect to critical third-party origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
+
+  <!-- DNS prefetch for other domains -->
+  <link rel="dns-prefetch" href="https://www.gstatic.com" />
+  <link rel="dns-prefetch" href="https://apis.google.com" />
+
+  <!-- Preload critical fonts -->
+  <link rel="preload"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
+
+  <!-- Preload critical JavaScript -->
+  <link rel="modulepreload" href="/src/main.tsx" />
+
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#E8B84B" />
   <meta name="mobile-web-app-capable" content="yes" />
@@ -14,12 +38,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="WorkPlex" />
   <link rel="manifest" href="/manifest.json" />
-
-  <!-- Preload critical fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-    rel="stylesheet" />
 
   <!-- ============================================================
        Professional Splash Screen Styles
@@ -51,7 +69,7 @@
       justify-content: center;
       background: radial-gradient(ellipse at center, #1a1a2e 0%, #0A0A0A 70%);
       z-index: 99999;
-      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: opacity 0.3s ease-out;
       will-change: opacity;
     }
 
@@ -120,7 +138,7 @@
       width: 40%;
       background: linear-gradient(90deg, transparent, #E8B84B, transparent);
       border-radius: 999px;
-      animation: loadingSlide 1.5s ease-in-out infinite;
+      animation: loadingSlide 1s ease-in-out infinite;
     }
 
     /* Animations */
@@ -222,42 +240,57 @@
 
   <!-- ============================================================
        PWA Service Worker Registration
-       Forces hard refresh when new Service Worker is detected
+       Optimized for instant loading with aggressive caching
        ============================================================ -->
   <script>
+    // Register Service Worker with performance optimizations
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', async () => {
         try {
-          const registration = await navigator.serviceWorker.register('/sw.js', {
-            scope: '/'
-          });
-
-          console.log('[WorkPlex PWA] Service Worker registered:', registration.scope);
-
-          // Check for updates and force hard refresh
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (!newWorker) return;
-
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New version available - force hard refresh
-                console.log('[WorkPlex PWA] New version available, refreshing...');
-                window.location.reload();
-              }
+          // Register SW after page load to avoid blocking
+          setTimeout(async () => {
+            const registration = await navigator.serviceWorker.register('/sw.js', {
+              scope: '/'
             });
-          });
 
-          // Handle controller state change for instant updates
-          navigator.serviceWorker.addEventListener('controllerchange', () => {
-            console.log('[WorkPlex PWA] Controller changed, reloading...');
-            window.location.reload();
-          });
+            console.log('[WorkPlex PWA] Service Worker registered:', registration.scope);
+
+            // Check for updates and force hard refresh
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              if (!newWorker) return;
+
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[WorkPlex PWA] New version available, refreshing...');
+                  window.location.reload();
+                }
+              });
+            });
+
+            // Handle controller state change for instant updates
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+              console.log('[WorkPlex PWA] Controller changed, reloading...');
+              window.location.reload();
+            });
+          }, 1000); // Delay SW registration by 1s to prioritize page load
         } catch (error) {
           console.error('[WorkPlex PWA] Service Worker registration failed:', error);
         }
       });
     }
+
+    // Remove splash screen as soon as possible
+    window.addEventListener('load', () => {
+      const splash = document.getElementById('workplex-splash');
+      if (splash) {
+        // Remove immediately after page load
+        requestAnimationFrame(() => {
+          splash.style.opacity = '0';
+          setTimeout(() => splash.remove(), 300);
+        });
+      }
+    });
   </script>
 </body>
 
