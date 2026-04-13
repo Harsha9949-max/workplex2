@@ -1,0 +1,136 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    match /users/{userId}/transactions/{txId} {
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if false;
+    }
+    match /coupons/{workerUid} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == workerUid;
+    }
+    match /couponUsages/{usageId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.buyerId != request.resource.data.ownerId && request.auth.uid == request.resource.data.buyerId;
+      allow update: if false;
+    }
+    match /tasks/{taskId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /taskSubmissions/{submissionId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.workerId;
+      allow update: if false;
+    }
+    match /withdrawals/{withdrawalId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.workerId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.workerId;
+      allow update: if false;
+    }
+    match /announcements/{announcementId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /teams/{leadId}/members/{memberId} {
+      allow read: if request.auth != null && (request.auth.uid == leadId || request.auth.uid == memberId);
+      allow write: if false;
+    }
+    match /managerTeams/{managerId}/leads/{leadId} {
+      allow read: if request.auth != null && request.auth.uid == managerId;
+      allow write: if false;
+    }
+    match /referrals/{referralId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /commissionLogs/{logId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    match /systemLogs/{logId} { allow read, write: if false; }
+    match /aiErrors/{errorId} { allow read, write: if false; }
+    
+    // AI Cache (read-only for users, write-only for Cloud Functions)
+    match /aiCache/{cacheId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Rate Limits (read-only for users, write-only for Cloud Functions)
+    match /rateLimits/{limitId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Fraud Alerts (admin only)
+    match /fraudAlerts/{alertId} {
+      allow read: if request.auth != null && request.auth.uid == resource.data.workerId;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Public Profiles (read-only for everyone, write-only for Cloud Functions)
+    match /publicProfiles/{username} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Team Chats (read for authenticated, create for team members)
+    match /teamChats/{leadId}/messages/{msgId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+      allow update, delete: if false;
+    }
+    
+    // Live Feed (read-only for everyone, write-only for Cloud Functions)
+    match /liveFeed/{feedId} {
+      allow read: if true;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Family Transfers (read/write for owner only)
+    match /familyTransfers/{transferId} {
+      allow read: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.senderId == request.auth.uid;
+      allow update, delete: if false; // Only Cloud Functions/Admins
+    }
+    
+    // Rate Limits (read-only for users, write-only for Cloud Functions)
+    match /rateLimits/{limitId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only Cloud Functions
+    }
+    
+    // Partner Shops (read public, write owner only)
+    match /partnerShops/{shopId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.ownerUID == request.auth.uid;
+      allow update: if request.auth != null && resource.data.ownerUID == request.auth.uid;
+      allow delete: if false;
+    }
+    
+    // Partner Products (read public, write owner only)
+    match /partnerProducts/{partnerId}/products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && partnerId == request.auth.uid;
+    }
+    
+    // Partner Orders (read for partner and customer, write from client)
+    match /partnerOrders/{orderId} {
+      allow read: if request.auth != null && (request.auth.uid == resource.data.partnerId || request.auth.uid == resource.data.customerId);
+      allow create: if request.auth != null;
+      allow update: if false; // Only Cloud Functions/Admins can update status
+      allow delete: if false;
+    }
+    
+    // Catalog Products (read public, write admin only)
+    match /catalogProducts/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.email == 'hvrsindustriespvtltd@gmail.com';
+    }
+  }
+}
