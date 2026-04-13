@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { doc, onSnapshot, collection, query, where, orderBy, limit, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 import toast from 'react-hot-toast';
-import QRCode from 'qrcode.js';
+import { QRCodeCanvas } from 'qrcode.react';
 import {
   Share2, Download, MessageCircle, Bell, TrendingUp, Send, Copy, QrCode,
   Wallet, X, Check, AlertCircle, Gift, ChevronRight, Zap,
@@ -307,34 +307,25 @@ export const FamilyTransferModal = ({ isOpen, onClose, earnedBalance, userId, us
 
 // ==================== REFERRAL QR MODAL ====================
 export const ReferralQRModal = ({ isOpen, onClose, userId, username }) => {
-  const qrRef = useRef(null);
   const [qrGenerated, setQrGenerated] = useState(false);
 
   useEffect(() => {
-    if (isOpen && userId && qrRef.current && !qrGenerated) {
-      qrRef.current.innerHTML = '';
-      const link = `https://workplex.hvrs.in/join?ref=${userId}`;
-      new QRCode(qrRef.current, {
-        text: link,
-        width: 200,
-        height: 200,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H,
-      });
+    if (isOpen && userId) {
       setQrGenerated(true);
     }
-  }, [isOpen, userId, qrGenerated]);
+  }, [isOpen, userId]);
 
   if (!isOpen) return null;
 
+  const link = `https://workplex.hvrs.in/join?ref=${userId}`;
+
   const handleDownload = () => {
-    const canvas = qrRef.current?.querySelector('canvas');
+    const canvas = document.querySelector('#qr-canvas canvas');
     if (canvas) {
-      const link = document.createElement('a');
-      link.download = `workplex-referral-${username || userId}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
+      const downloadLink = document.createElement('a');
+      downloadLink.download = `workplex-referral-${username || userId}.png`;
+      downloadLink.href = canvas.toDataURL();
+      downloadLink.click();
       toast.success('QR Code downloaded!');
     }
   };
@@ -372,10 +363,19 @@ export const ReferralQRModal = ({ isOpen, onClose, userId, username }) => {
             <h3 className="text-white font-bold text-xl text-center mb-6">Your Referral QR Code</h3>
 
             {/* QR Code Container */}
-            <div className="bg-white rounded-2xl p-6 flex items-center justify-center mb-6 relative overflow-hidden">
+            <div className="bg-white rounded-2xl p-6 flex items-center justify-center mb-6 relative overflow-hidden" id="qr-canvas">
               {/* Gradient border effect */}
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-[#E8B84B] to-[#00C9A7] opacity-20" />
-              <div ref={qrRef} className="relative z-10" />
+              <div className="relative z-10">
+                <QRCodeCanvas
+                  value={link}
+                  size={200}
+                  level="H"
+                  includeMargin={true}
+                  bgColor="#FFFFFF"
+                  fgColor="#000000"
+                />
+              </div>
             </div>
 
             <p className="text-gray-400 text-xs text-center mb-6">
