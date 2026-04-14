@@ -3,63 +3,55 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>WorkPlex - HVRS Innovations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="WorkPlex - Elite Gig Economy Platform by HVRS Innovations" />
+  <meta name="theme-color" content="#E8B84B" />
 
   <!-- ============================================================
-       Performance Optimizations - Resource Hints
+       Performance - Resource Hints & Preloading
        ============================================================ -->
-
-  <!-- Preconnect to critical third-party origins -->
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
-  <link rel="preconnect" href="https://firebase.googleapis.com" crossorigin />
-  <link rel="preconnect" href="https://storage.googleapis.com" crossorigin />
-
-  <!-- DNS prefetch for other domains -->
-  <link rel="dns-prefetch" href="https://www.gstatic.com" />
-  <link rel="dns-prefetch" href="https://apis.google.com" />
-
-  <!-- Preload critical fonts -->
-  <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style" />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
     rel="stylesheet" />
-
-  <!-- Preload critical JavaScript -->
   <link rel="modulepreload" href="/src/main.tsx" />
 
   <!-- PWA Meta Tags -->
-  <meta name="theme-color" content="#E8B84B" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="WorkPlex" />
   <link rel="manifest" href="/manifest.json" />
 
+  <!-- SEO -->
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="WorkPlex - HVRS Innovations" />
+  <meta property="og:description" content="Elite Gig Economy Platform" />
+  <meta property="og:type" content="website" />
+
+  <title>WorkPlex - HVRS Innovations</title>
+
   <!-- ============================================================
-       Professional Splash Screen Styles
-       Displayed while React hydrates - automatically removed on load
+       Critical CSS - Inline for Fast FCP
        ============================================================ -->
   <style>
     *,
     *::before,
     *::after {
+      box-sizing: border-box;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
     }
 
     body {
       background: #0A0A0A;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      color: #fff;
+      overflow-x: hidden;
     }
 
-    /* Splash Screen Container */
     #workplex-splash {
       position: fixed;
       inset: 0;
@@ -73,7 +65,6 @@
       will-change: opacity;
     }
 
-    /* Logo Container */
     .splash-logo-container {
       position: relative;
       width: 96px;
@@ -81,7 +72,6 @@
       margin-bottom: 2rem;
     }
 
-    /* Logo Glow Effect */
     .splash-logo-glow {
       position: absolute;
       inset: -12px;
@@ -90,7 +80,6 @@
       animation: pulseGlow 2s ease-in-out infinite;
     }
 
-    /* Logo SVG */
     .splash-logo {
       position: relative;
       width: 96px;
@@ -98,21 +87,18 @@
       animation: logoFloat 3s ease-in-out infinite;
     }
 
-    /* Title */
     .splash-title {
-      font-size: 2.25rem;
+      font-size: clamp(1.75rem, 1.5rem + 1.25vw, 2.25rem);
       font-weight: 900;
       background: linear-gradient(135deg, #E8B84B 0%, #F5D78E 50%, #E8B84B 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      letter-spacing: -0.02em;
       margin-bottom: 0.5rem;
     }
 
-    /* Subtitle */
     .splash-subtitle {
-      font-size: 0.875rem;
+      font-size: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
       color: #6B7280;
       font-weight: 400;
       letter-spacing: 0.05em;
@@ -120,7 +106,6 @@
       margin-bottom: 3rem;
     }
 
-    /* Loading Bar */
     .splash-loader {
       width: 120px;
       height: 3px;
@@ -141,7 +126,6 @@
       animation: loadingSlide 1s ease-in-out infinite;
     }
 
-    /* Animations */
     @keyframes pulseGlow {
 
       0%,
@@ -178,37 +162,51 @@
       }
     }
 
-    /* Hide splash when fading out */
     #workplex-splash.fade-out {
       opacity: 0;
       pointer-events: none;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #E8B84B;
+      color: #000;
+      padding: 0.5rem 1rem;
+      z-index: 10000;
+      transition: top 150ms;
+    }
+
+    .skip-link:focus {
+      top: 0;
     }
   </style>
 </head>
 
 <body>
+  <!-- Accessibility Skip Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
   <!-- Root element with embedded splash screen -->
   <div id="root">
     <!-- ============================================================
          High-End SVG Splash Screen
          Automatically removed when React hydrates
          ============================================================ -->
-    <div id="workplex-splash">
+    <div id="workplex-splash" role="status" aria-label="Loading WorkPlex application">
       <div class="splash-logo-container">
         <div class="splash-logo-glow"></div>
-        <svg class="splash-logo" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Shield Base -->
+        <svg class="splash-logo" viewBox="0 0 96 96" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"
+          aria-label="WorkPlex Logo">
+          <title>WorkPlex Logo</title>
           <path d="M48 4L84 18V46C84 68 68 86 48 92C28 86 12 68 12 46V18L48 4Z" fill="url(#shieldGradient)"
             stroke="#E8B84B" stroke-width="2" />
-          <!-- Inner Shield -->
           <path d="M48 12L76 24V46C76 64 62 78 48 84C34 78 20 64 20 46V24L48 12Z" fill="url(#innerGradient)"
             opacity="0.6" />
-          <!-- W Letter -->
           <path d="M32 36L40 52L48 36L56 52L64 36" stroke="#000000" stroke-width="4" stroke-linecap="round"
             stroke-linejoin="round" />
-          <!-- Accent Dots -->
           <circle cx="48" cy="68" r="4" fill="#E8B84B" />
-          <!-- Gradients -->
           <defs>
             <linearGradient id="shieldGradient" x1="12" y1="4" x2="84" y2="92">
               <stop offset="0%" stop-color="#F5D78E" />
@@ -234,57 +232,41 @@
 
   <!-- ============================================================
        Main Application Entry Point
-       Using ES Module for Vite HMR support
        ============================================================ -->
   <script type="module" src="/src/main.tsx"></script>
 
   <!-- ============================================================
-       PWA Service Worker Registration
-       Optimized for instant loading with aggressive caching
+       PWA Service Worker Registration - Delayed for Priority
        ============================================================ -->
   <script>
-    // Register Service Worker with performance optimizations
+    // Register Service Worker after page load to avoid blocking
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', async () => {
-        try {
-          // Register SW after page load to avoid blocking
-          setTimeout(async () => {
-            const registration = await navigator.serviceWorker.register('/sw.js', {
-              scope: '/'
-            });
-
-            console.log('[WorkPlex PWA] Service Worker registered:', registration.scope);
-
-            // Check for updates and force hard refresh
+      window.addEventListener('load', () => {
+        setTimeout(async () => {
+          try {
+            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+            console.log('[PWA] Service Worker registered');
             registration.addEventListener('updatefound', () => {
               const newWorker = registration.installing;
-              if (!newWorker) return;
-
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  console.log('[WorkPlex PWA] New version available, refreshing...');
-                  window.location.reload();
-                }
-              });
+              if (newWorker) {
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    window.location.reload();
+                  }
+                });
+              }
             });
-
-            // Handle controller state change for instant updates
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-              console.log('[WorkPlex PWA] Controller changed, reloading...');
-              window.location.reload();
-            });
-          }, 1000); // Delay SW registration by 1s to prioritize page load
-        } catch (error) {
-          console.error('[WorkPlex PWA] Service Worker registration failed:', error);
-        }
+          } catch (error) {
+            console.error('[PWA] Registration failed:', error);
+          }
+        }, 1000);
       });
     }
 
-    // Remove splash screen as soon as possible
+    // Remove splash screen immediately after React hydrates
     window.addEventListener('load', () => {
       const splash = document.getElementById('workplex-splash');
       if (splash) {
-        // Remove immediately after page load
         requestAnimationFrame(() => {
           splash.style.opacity = '0';
           setTimeout(() => splash.remove(), 300);

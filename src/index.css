@@ -1,7 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import "tailwindcss";
 
+/* ============================================================
+   CSS Custom Properties - Design Tokens
+   ============================================================ */
 :root {
+  /* Colors */
   --bg-dark: #0A0A0A;
   --surface: #111111;
   --surface-alt: #1A1A1A;
@@ -10,135 +14,302 @@
   --achievement-gold: #FFD700;
   --streak-orange: #FF8C00;
   --streak-red: #FF0000;
+  
+  /* Typography - Fluid with clamp() */
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.9rem + 0.5vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.6vw, 1.25rem);
+  --text-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --text-3xl: clamp(1.875rem, 1.5rem + 1.85vw, 2.5rem);
+  --text-4xl: clamp(2.25rem, 1.7rem + 2.75vw, 3rem);
+  
+  /* Spacing - Fluid */
+  --space-xs: clamp(0.25rem, 0.2rem + 0.25vw, 0.5rem);
+  --space-sm: clamp(0.5rem, 0.4rem + 0.5vw, 0.75rem);
+  --space-md: clamp(1rem, 0.8rem + 1vw, 1.5rem);
+  --space-lg: clamp(1.5rem, 1.2rem + 1.5vw, 2rem);
+  --space-xl: clamp(2rem, 1.5rem + 2.5vw, 3rem);
+  
+  /* Layout */
+  --max-width: 1280px;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+  --shadow-gold: 0 0 20px rgba(232, 184, 75, 0.3);
+  
+  /* Transitions */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   Base Styles - Zero CLS
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
   background-color: var(--bg-dark);
   color: #ffffff;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--text-base);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
-/* Gamification Animations */
+/* ============================================================
+   Media - Explicit Dimensions to Prevent CLS
+   ============================================================ */
+img, video, svg, canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+img {
+  aspect-ratio: attr(width) / attr(height);
+  content-visibility: auto;
+}
+
+/* ============================================================
+   Focus Management - Accessibility
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Skip to content link for accessibility */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--accent-gold);
+  color: #000;
+  padding: var(--space-xs) var(--space-sm);
+  z-index: 10000;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ============================================================
+   Animations - GPU Accelerated (transform + opacity only)
+   ============================================================ */
 @keyframes fire-glow {
-
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-
-  50% {
-    opacity: 0.6;
-    transform: scale(1.2);
-  }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.2); }
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes pulse-glow {
-
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(232, 184, 75, 0.3);
-  }
-
-  50% {
-    box-shadow: 0 0 40px rgba(232, 184, 75, 0.6);
-  }
+  0%, 100% { box-shadow: var(--shadow-gold); }
+  50% { box-shadow: 0 0 40px rgba(232, 184, 75, 0.6); }
 }
 
 @keyframes float {
-
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
-@keyframes shake {
-
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-
-  25% {
-    transform: translateX(-5px);
-  }
-
-  75% {
-    transform: translateX(5px);
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-.animate-fire-glow {
-  animation: fire-glow 2s ease-in-out infinite;
-}
+/* Animation utility classes */
+.animate-fire-glow { animation: fire-glow 2s ease-in-out infinite; }
+.animate-shimmer { animation: shimmer 2s linear infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-spin { animation: spin 1s linear infinite; }
 
-.animate-shimmer {
-  animation: shimmer 2s linear infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-shake {
-  animation: shake 0.5s ease-in-out infinite;
-}
-
+/* ============================================================
+   Glass Morphism
+   ============================================================ */
 .glass {
   background: rgba(17, 17, 17, 0.7);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* ============================================================
+   Gold Glow Effect
+   ============================================================ */
 .gold-glow {
-  box-shadow: 0 0 20px rgba(232, 184, 75, 0.3);
+  box-shadow: var(--shadow-gold);
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
-}
-
+/* ============================================================
+   Scrollbar - Hidden for specific elements
+   ============================================================ */
+.no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  ring: 2px;
-  ring-color: var(--accent-gold);
+/* ============================================================
+   Form Elements - Accessible
+   ============================================================ */
+input, textarea, select, button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
-input::placeholder,
-textarea::placeholder {
+input:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+  ring: none;
+}
+
+input::placeholder, textarea::placeholder {
   color: #666666;
+  opacity: 1;
 }
 
-button {
-  transition: all 0.2s ease-in-out;
+/* ============================================================
+   Button - Accessible Interactions
+   ============================================================ */
+button, [role="button"] {
+  cursor: pointer;
+  transition: all var(--transition-base);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 44px;
+  min-width: 44px;
 }
 
-button:hover {
+button:hover, [role="button"]:hover {
   transform: translateY(-1px);
+}
+
+button:active, [role="button"]:active {
+  transform: translateY(0);
+}
+
+button:disabled, [role="button"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ============================================================
+   View Transitions API - Smooth Page Navigation
+   ============================================================ */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* ============================================================
+   Content Visibility - Off-screen Sections
+   ============================================================ */
+.offscreen-section {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 500px;
+}
+
+/* ============================================================
+   Container Queries Setup
+   ============================================================ */
+.container-wrapper {
+  container-type: inline-size;
+  container-name: wrapper;
+}
+
+@container wrapper (min-width: 400px) {
+  .responsive-card {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container wrapper (min-width: 768px) {
+  .responsive-card {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@container wrapper (min-width: 1024px) {
+  .responsive-card {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================================
+   Reduced Motion - Accessibility
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================================
+   High Contrast Mode - Accessibility
+   ============================================================ */
+@media (prefers-contrast: high) {
+  :root {
+    --bg-dark: #000000;
+    --surface: #0A0A0A;
+    --accent-gold: #FFD700;
+  }
+  
+  button, input, textarea, select {
+    border: 2px solid currentColor;
+  }
+}
+
+/* ============================================================
+   Print Styles
+   ============================================================ */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
 }
