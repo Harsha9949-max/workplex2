@@ -25,7 +25,7 @@
   <meta name="apple-mobile-web-app-title" content="WorkPlex" />
   <link rel="manifest" href="/manifest.json" />
 
-  <!-- SEO -->
+  <!-- SEO & Social -->
   <meta name="robots" content="index, follow" />
   <meta property="og:title" content="WorkPlex - HVRS Innovations" />
   <meta property="og:description" content="Elite Gig Economy Platform" />
@@ -45,13 +45,40 @@
       padding: 0;
     }
 
+    html {
+      font-size: 16px;
+      -webkit-text-size-adjust: 100%;
+    }
+
     body {
       background: #0A0A0A;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       color: #fff;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
+    /* Skip Link - Accessibility */
+    .skip-link {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: #E8B84B;
+      color: #000;
+      padding: 0.5rem 1rem;
+      z-index: 10000;
+      font-weight: 600;
+      text-decoration: none;
+      transition: top 150ms ease;
+    }
+
+    .skip-link:focus {
+      top: 0;
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+
+    /* Splash Screen */
     #workplex-splash {
       position: fixed;
       inset: 0;
@@ -61,8 +88,13 @@
       justify-content: center;
       background: radial-gradient(ellipse at center, #1a1a2e 0%, #0A0A0A 70%);
       z-index: 99999;
-      transition: opacity 0.3s ease-out;
       will-change: opacity;
+    }
+
+    #workplex-splash.removing {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease-out;
     }
 
     .splash-logo-container {
@@ -84,7 +116,6 @@
       position: relative;
       width: 96px;
       height: 96px;
-      animation: logoFloat 3s ease-in-out infinite;
     }
 
     .splash-title {
@@ -140,18 +171,6 @@
       }
     }
 
-    @keyframes logoFloat {
-
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-
-      50% {
-        transform: translateY(-8px);
-      }
-    }
-
     @keyframes loadingSlide {
       0% {
         left: -40%;
@@ -162,26 +181,30 @@
       }
     }
 
-    #workplex-splash.fade-out {
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .skip-link {
-      position: absolute;
-      top: -40px;
-      left: 0;
-      background: #E8B84B;
-      color: #000;
-      padding: 0.5rem 1rem;
-      z-index: 10000;
-      transition: top 150ms;
-    }
-
-    .skip-link:focus {
-      top: 0;
+    /* No JS fallback */
+    .no-js-message {
+      display: none;
+      color: #9CA3AF;
+      margin-top: 1rem;
+      font-size: 0.875rem;
     }
   </style>
+
+  <!-- Hide splash if JS is disabled -->
+  <noscript>
+    <style>
+      #workplex-splash {
+        display: none !important;
+      }
+
+      .no-js-message {
+        display: block !important;
+        text-align: center;
+        padding: 2rem;
+        color: #EF4444;
+      }
+    </style>
+  </noscript>
 </head>
 
 <body>
@@ -192,7 +215,7 @@
   <div id="root">
     <!-- ============================================================
          High-End SVG Splash Screen
-         Automatically removed when React hydrates
+         Removed by main.tsx AFTER React successfully renders
          ============================================================ -->
     <div id="workplex-splash" role="status" aria-label="Loading WorkPlex application">
       <div class="splash-logo-container">
@@ -227,6 +250,11 @@
       <div class="splash-loader">
         <div class="splash-loader-bar"></div>
       </div>
+
+      <noscript>
+        <p class="no-js-message">JavaScript is required to run WorkPlex. Please enable JavaScript and refresh the page.
+        </p>
+      </noscript>
     </div>
   </div>
 
@@ -236,43 +264,21 @@
   <script type="module" src="/src/main.tsx"></script>
 
   <!-- ============================================================
-       PWA Service Worker Registration - Delayed for Priority
+       Inline Service Worker Registration - Idempotent
+       Only registers SW, NO reload logic (handled in main.tsx)
        ============================================================ -->
   <script>
-    // Register Service Worker after page load to avoid blocking
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        setTimeout(async () => {
-          try {
-            const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-            console.log('[PWA] Service Worker registered');
-            registration.addEventListener('updatefound', () => {
-              const newWorker = registration.installing;
-              if (newWorker) {
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    window.location.reload();
-                  }
-                });
-              }
-            });
-          } catch (error) {
-            console.error('[PWA] Registration failed:', error);
-          }
-        }, 1000);
+    // Minimal SW registration - main.tsx handles updates safely
+    if ('serviceWorker' in navigator && !window.__SW_REGISTERED) {
+      window.__SW_REGISTERED = true;
+      window.addEventListener('load', function () {
+        setTimeout(function () {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' })
+            .then(function (reg) { console.log('[SW] Registered'); })
+            .catch(function (err) { console.warn('[SW] Registration failed (non-critical):', err); });
+        }, 2000);
       });
     }
-
-    // Remove splash screen immediately after React hydrates
-    window.addEventListener('load', () => {
-      const splash = document.getElementById('workplex-splash');
-      if (splash) {
-        requestAnimationFrame(() => {
-          splash.style.opacity = '0';
-          setTimeout(() => splash.remove(), 300);
-        });
-      }
-    });
   </script>
 </body>
 
