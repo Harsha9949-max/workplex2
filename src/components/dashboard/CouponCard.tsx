@@ -27,13 +27,13 @@ export const CouponCard: React.FC<CouponCardProps> = ({ couponData, loading, use
       const now = new Date().getTime();
       const expires = couponData.expiresAt.toDate ? couponData.expiresAt.toDate().getTime() : new Date(couponData.expiresAt).getTime();
       const activated = couponData.activatedAt.toDate ? couponData.activatedAt.toDate().getTime() : new Date(couponData.activatedAt).getTime();
-      
+
       const remaining = expires - now;
       setTimeLeft(Math.max(0, remaining));
-      
+
       const expiryProgress = getCouponExpiryProgress(couponData.activatedAt, couponData.expiresAt);
       setProgress(expiryProgress);
-      
+
       const hours = getHoursUntilExpiry(couponData.expiresAt);
       setHoursLeft(hours);
     };
@@ -73,7 +73,7 @@ export const CouponCard: React.FC<CouponCardProps> = ({ couponData, loading, use
       <div className="bg-[#0A0A0A]/60 rounded-2xl p-5 mb-5 border border-white/5 relative overflow-hidden">
         {/* Inner glow for coupon box effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#E8B84B]/5 to-transparent pointer-events-none" />
-        <code className="inline-block text-3xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] tracking-widest relative z-10 pb-1">
+        <code className="inline-block text-3xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] tracking-normal relative z-10 pb-1">
           {couponData.code}
         </code>
       </div>

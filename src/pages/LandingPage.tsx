@@ -108,7 +108,7 @@ const LandingPage: React.FC = () => {
       <div className="fixed inset-0 pointer-events-none opacity-60">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00C9A7]/5 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#E8B84B]/5 rounded-full blur-[120px]" />
-        
+
         {/* Subtle Ambient Grid */}
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -135,11 +135,10 @@ const LandingPage: React.FC = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.6 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? 'bg-[#0A0A0A]/80 backdrop-blur-2xl border-b border-white/[0.03]'
-            : 'bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
+          ? 'bg-[#0A0A0A]/80 backdrop-blur-2xl border-b border-white/[0.03]'
+          : 'bg-transparent'
+          }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -283,13 +282,13 @@ const LandingPage: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-4xl md:text-6xl lg:text-8xl font-bold uppercase mb-6 font-display"
-            style={{ lineHeight: 1.1, letterSpacing: '0.01em', overflow: 'visible' }}
+            className="text-4xl md:text-6xl lg:text-8xl font-bold uppercase mb-6 font-display tracking-normal"
+            style={{ lineHeight: 1.15, overflow: 'visible' }}
           >
-            <span className="text-white">Work From Home</span>
+            <span className="text-white inline-block">Work From Home</span>
             <br />
             <span
-              className="inline-block bg-gradient-to-r from-amber-400 via-amber-500 to-teal-400 bg-clip-text text-transparent pb-2"
+              className="inline-block bg-gradient-to-r from-amber-400 via-amber-500 to-teal-400 bg-clip-text text-transparent pb-2 tracking-normal"
             >
               Earn Daily
             </span>
@@ -411,7 +410,7 @@ const LandingPage: React.FC = () => {
             className="text-center mb-16"
           >
             <h2
-              className="text-3xl md:text-5xl font-bold uppercase mb-4 font-display"
+              className="text-3xl md:text-5xl font-bold uppercase mb-4 font-display tracking-normal"
               style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
             >
               Simple Tasks. <span className="inline-block text-amber-400">Real Earnings.</span>
@@ -514,7 +513,7 @@ const LandingPage: React.FC = () => {
             className="text-center mb-16"
           >
             <h2
-              className="text-3xl md:text-5xl font-bold uppercase mb-4 font-display"
+              className="text-3xl md:text-5xl font-bold uppercase mb-4 font-display tracking-normal"
               style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
             >
               Climb the <span className="inline-block text-teal-400">Leaderboard</span>
@@ -578,7 +577,7 @@ const LandingPage: React.FC = () => {
               </motion.div>
 
               <h2
-                className="text-4xl md:text-6xl font-bold uppercase mb-6 font-display"
+                className="text-4xl md:text-6xl font-bold uppercase mb-6 font-display tracking-normal"
                 style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
               >
                 Start Earning{' '}

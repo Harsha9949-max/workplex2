@@ -72,7 +72,11 @@ export const AuthProvider = ({ children }) => {
       const firebaseUser = result.user;
       
       if (firebaseUser.email === 'marateyh@gmail.com') {
-        window.location.href = '/admin';
+        // Admin user — continue normal flow. Route-level guards handle admin redirect.
+        // Previously used window.location.href which caused full page reload.
+        setUser(firebaseUser);
+        setUserData({ ...getDefaultUserData(firebaseUser), role: 'admin' });
+        setLoading(false);
         return;
       }
       
@@ -120,7 +124,10 @@ export const AuthProvider = ({ children }) => {
           setUser(firebaseUser);
           
           if (firebaseUser.email === 'marateyh@gmail.com') {
-            window.location.href = '/admin';
+            // Admin user — continue normal flow. Route-level guards handle admin redirect.
+            setUser(firebaseUser);
+            setUserData({ ...getDefaultUserData(firebaseUser), role: 'admin' });
+            setLoading(false);
             return;
           }
           

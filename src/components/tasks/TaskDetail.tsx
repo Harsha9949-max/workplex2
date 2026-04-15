@@ -74,7 +74,7 @@ export const TaskDetail: React.FC<TaskDetailProps> = ({
             >
               <Coins size={48} className="text-[#E8B84B]" />
             </motion.div>
-            <div className="text-5xl font-black text-[#E8B84B] mb-2">
+            <div className="text-5xl font-black text-[#E8B84B] mb-2 tracking-normal">
               {formatCurrency(task.earnAmount)}
             </div>
             <p className="text-gray-400 text-sm">Earn on approval</p>

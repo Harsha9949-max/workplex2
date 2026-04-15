@@ -383,6 +383,19 @@ if ('serviceWorker' in navigator) {
           const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
           log('✅ Service Worker registered:', registration.scope);
 
+          // SHARED reload guard — prevents double-reload when both updatefound
+          // and controllerchange fire on the same SW update (P0-5 fix)
+          let reloadTriggered = false;
+          const triggerReload = (reason: string) => {
+            if (reloadTriggered) {
+              log(`⚠️ Reload already triggered — skipping (${reason})`);
+              return;
+            }
+            reloadTriggered = true;
+            log(`🔄 ${reason} — reloading`);
+            window.location.reload();
+          };
+
           // Idempotent update flow - only reload if a previous controller exists
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -396,23 +409,14 @@ if ('serviceWorker' in navigator) {
               // Only reload if we have an active controller AND new worker is installed
               // This prevents infinite loops on first-ever install
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                log('🔄 New version available - reloading');
-                window.location.reload();
+                triggerReload('New version available via updatefound');
               }
             });
           });
 
-          // Handle controller change - only reload once per session
-          let controllerChangedHandled = false;
+          // Handle controller change
           navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (controllerChangedHandled) {
-              log('⚠️ controllerchange already handled this session');
-              return;
-            }
-            controllerChangedHandled = true;
-
-            log('🔄 Controller changed - reloading');
-            window.location.reload();
+            triggerReload('Controller changed');
           });
 
         } catch (error) {

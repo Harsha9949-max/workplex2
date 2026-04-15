@@ -70,7 +70,7 @@ export const TopBar: React.FC<TopBarProps> = ({ userData, loading }) => {
         {/* Wallet Balance Section */}
         <div className="bg-[#0A0A0A]/50 rounded-2xl p-4 border border-white/5">
           <div className="text-gray-400 text-xs font-semibold tracking-wider uppercase mb-1">Total Earned</div>
-          <div className="inline-block text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] font-display pb-1" aria-label={`Earned wallet balance: ${formatCurrency(userData.wallets.earned)}`}>
+          <div className="inline-block text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] font-display pb-1 tracking-normal" aria-label={`Earned wallet balance: ${formatCurrency(userData.wallets.earned)}`}>
             {formatCurrency(userData.wallets.earned)}
           </div>
           <div className="text-gray-500 text-xs mt-2">

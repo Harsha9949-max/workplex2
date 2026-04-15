@@ -68,7 +68,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onAccept, onSkip }) =>
 
       {/* Earning Amount */}
       <div className="mb-4 relative z-10">
-        <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] font-black text-3xl font-display pb-1">
+        <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] font-black text-3xl font-display pb-1 tracking-normal">
           {formatCurrency(task.earning)}
         </span>
       </div>

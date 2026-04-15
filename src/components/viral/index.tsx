@@ -478,7 +478,7 @@ export const EarningsStoryGenerator = ({ earnings, userName, venture, onShare })
 
           <div className="text-center mb-8">
             <p className="text-white/80 text-lg mb-2">I just earned</p>
-            <p className="text-white font-black text-5xl mb-2">{formatCurrency(earnings)}</p>
+            <p className="text-white font-black text-5xl mb-2 tracking-normal">{formatCurrency(earnings)}</p>
             <p className="text-white/80 text-lg">on WorkPlex! 🔥</p>
           </div>
 

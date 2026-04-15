@@ -60,6 +60,7 @@ import { PublicProfile, ResellerShop, TeamChat, EarningsStoryGenerator, PWAInsta
 import { ShopSetupWizard, PublicShopPage, PartnerDashboard, CheckoutModal, AdminCatalogManager } from './components/partnerStore/index';
 import { ProfileScreen as ProfileScreenV3 } from './components/roles';
 import { PublicProfile as PublicProfileOld, ResellerShop as ResellerShopOld, TeamChat as TeamChatOld } from './ViralLayer';
+import { AuthGuard } from './components/AuthGuard';
 import AdminPanel from './AdminPanel';
 import AuthPage from './pages/AuthPage';
 import LandingPage from './pages/LandingPage';
@@ -538,17 +539,39 @@ export default function App() {
           <Route path="/auth" element={<AuthPage />} />
           <Route path="/" element={<LandingPage />} />
           <Route path="/home" element={<MainApp />} />
-          <Route path="/tasks" element={<TasksScreenV3Wrapper />} />
-          <Route path="/wallet" element={<WalletScreenWrapper />} />
-          <Route path="/coupon" element={<CouponScreenWrapper />} />
-          <Route path="/profile" element={<ProfileScreenWrapper />} />
-          <Route path="/leaderboard" element={<LeaderboardWrapper />} />
+          <Route path="/tasks" element={
+            <AuthGuard>{(user) => <TasksScreenV3 user={user} />}</AuthGuard>
+          } />
+          <Route path="/wallet" element={
+            <AuthGuard>{(user) => <WalletScreen user={user} />}</AuthGuard>
+          } />
+          <Route path="/coupon" element={
+            <AuthGuard>{(user) => <CouponDashboard user={user} />}</AuthGuard>
+          } />
+          <Route path="/profile" element={
+            <AuthGuard requireUserData>{(user, userData) => (
+              <RolesProfileScreen uid={user.uid} userData={userData} onLogout={() => signOut(auth)} onBack={() => window.history.back()} />
+            )}</AuthGuard>
+          } />
+          <Route path="/leaderboard" element={
+            <AuthGuard requireUserData>{(user, userData) => (
+              <LeaderboardScreen uid={user.uid} userData={userData} />
+            )}</AuthGuard>
+          } />
           <Route path="/admin/*" element={<AdminRouteGuard><AdminPanelWrapper /></AdminRouteGuard>} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/shop/:slug" element={<PublicShopPage />} />
-          <Route path="/team-chat/:leadId" element={<TeamChatWrapper />} />
-          <Route path="/setup-shop" element={<ShopSetupWrapper />} />
-          <Route path="/partner-dashboard" element={<PartnerDashboardWrapper />} />
+          <Route path="/team-chat/:leadId" element={
+            <AuthGuard requireUserData>{(user, userData) => (
+              <TeamChatGuardedContent user={user} userData={userData} />
+            )}</AuthGuard>
+          } />
+          <Route path="/setup-shop" element={
+            <AuthGuard>{(user) => <ShopSetupWizard user={user} onComplete={() => window.location.href = '/partner-dashboard'} />}</AuthGuard>
+          } />
+          <Route path="/partner-dashboard" element={
+            <AuthGuard>{(user) => <PartnerDashboard user={user} />}</AuthGuard>
+          } />
           <Route path="/:username" element={<PublicProfile />} />
           <Route path="*" element={<MainApp />} />
         </Routes>
@@ -557,117 +580,36 @@ export default function App() {
   );
 }
 
-function TasksScreenV3Wrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
+/**
+ * TeamChatGuardedContent — extracted from the old TeamChatWrapper.
+ * Handles the role-based access check for team chat.
+ * Auth is handled by <AuthGuard> in the route definition.
+ */
+function TeamChatGuardedContent({ user, userData }: { user: FirebaseUser; userData: Record<string, unknown> | null }) {
+  const canAccessChat = ['Lead Marketer', 'Manager', 'Sub-Admin', 'Admin'].includes((userData?.role as string) || '');
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-      } else {
-        window.location.href = '/auth';
-      }
-      setLoading(false);
-    });
-    return unsubscribe;
-  }, []);
-
-  if (loading || !user) {
+  if (!canAccessChat) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
+      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🔒</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Access Restricted</h2>
+          <p className="text-gray-400 mb-6">Upgrade to Lead Marketer to access Team Chat.</p>
+          <button onClick={() => window.history.back()} className="px-6 py-3 bg-[#E8B84B] text-black font-bold rounded-xl">Go Back</button>
+        </div>
       </div>
     );
   }
 
-  return <TasksScreenV3 user={user} />;
-}
-
-function WalletScreenWrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) setUser(firebaseUser);
-      else window.location.href = '/auth';
-      setLoading(false);
-    });
-    return unsubscribe;
-  }, []);
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  return <WalletScreen user={user} />;
-}
-
-function CouponScreenWrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) setUser(firebaseUser);
-      else window.location.href = '/auth';
-      setLoading(false);
-    });
-    return unsubscribe;
-  }, []);
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  return <CouponDashboard user={user} />;
-}
-
-function ProfileScreenWrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (doc) => {
-          if (doc.exists()) setUserData(doc.data());
-          setLoading(false);
-        });
-        return () => unsubUser();
-      } else {
-        window.location.href = '/auth';
-      }
-      setLoading(false);
-    });
-    return unsubAuth;
-  }, []);
-
-  if (loading || !user || !userData) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  return <RolesProfileScreen uid={user.uid} userData={userData} onLogout={() => signOut(auth)} onBack={() => window.history.back()} />;
+  // leadId comes from URL params, but we need to get it here
+  const leadId = window.location.pathname.split('/team-chat/')[1] || user.uid;
+  return <TeamChat leadId={leadId} leadName={(userData?.name as string) || ''} />;
 }
 
 function AdminPanelWrapper() {
   const [activeSection, setActiveSection] = useState('dashboard');
   const location = useLocation();
+  const routerNavigate = useNavigate();
 
   // Sync active section with URL
   useEffect(() => {
@@ -679,7 +621,8 @@ function AdminPanelWrapper() {
 
   const navigate = (section: string) => {
     setActiveSection(section);
-    window.history.pushState({}, '', `/admin/${section}`);
+    // Use React Router navigate instead of window.history.pushState (P0-2 fix)
+    routerNavigate(`/admin/${section}`, { replace: true });
   };
 
   const renderSection = () => {
@@ -699,145 +642,7 @@ function AdminPanelWrapper() {
   return <AdminLayout activeSection={activeSection} onNavigate={navigate}>{renderSection()}</AdminLayout>;
 }
 
-function LeaderboardWrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (doc) => {
-          if (doc.exists()) setUserData(doc.data());
-          setLoading(false);
-        });
-        return () => unsubUser();
-      } else {
-        window.location.href = '/auth';
-      }
-      setLoading(false);
-    });
-    return unsubAuth;
-  }, []);
-
-  if (loading || !user || !userData) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  return <LeaderboardScreen uid={user.uid} userData={userData} />;
-}
-
-function TeamChatWrapper() {
-  const { leadId } = useParams();
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (doc) => {
-          if (doc.exists()) setUserData(doc.data());
-          setLoading(false);
-        });
-        return () => unsubUser();
-      } else {
-        window.location.href = '/auth';
-      }
-      setLoading(false);
-    });
-    return unsubAuth;
-  }, []);
-
-  if (loading || !user || !userData) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  // Check if user has access to team chat
-  const canAccessChat = ['Lead Marketer', 'Manager', 'Sub-Admin', 'Admin'].includes(userData.role || '');
-
-  if (!canAccessChat) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="text-6xl mb-4">🔒</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Access Restricted</h2>
-          <p className="text-gray-400 mb-6">Upgrade to Lead Marketer to access Team Chat.</p>
-          <button onClick={() => window.history.back()} className="px-6 py-3 bg-[#E8B84B] text-black font-bold rounded-xl">Go Back</button>
-        </div>
-      </div>
-    );
-  }
-
-  return <TeamChat leadId={leadId || user.uid} leadName={userData.name} />;
-}
-
-function ShopSetupWrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) setUser(firebaseUser);
-      else window.location.href = '/auth';
-      setLoading(false);
-    });
-    return unsubAuth;
-  }, []);
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  return <ShopSetupWizard user={user} onComplete={() => window.location.href = '/partner-dashboard'} />;
-}
-
-function PartnerDashboardWrapper() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [userData, setUserData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser(firebaseUser);
-        const unsubUser = onSnapshot(doc(db, 'users', firebaseUser.uid), (doc) => {
-          if (doc.exists()) setUserData(doc.data());
-          setLoading(false);
-        });
-        return () => unsubUser();
-      } else {
-        window.location.href = '/auth';
-      }
-      setLoading(false);
-    });
-    return unsubAuth;
-  }, []);
-
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center">
-        <Loader2 className="w-12 h-12 text-[#E8B84B] animate-spin" />
-      </div>
-    );
-  }
-
-  return <PartnerDashboard user={user} />;
-}
+/* Wrapper components removed — all route guards now use <AuthGuard> in route definitions above. */
 
 export function MainApp() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
@@ -1018,7 +823,8 @@ export function MainApp() {
 
   if (user?.email === 'hvrsindustriespvtltd@gmail.com' || window.location.pathname === '/admin') {
     if (user?.email !== 'hvrsindustriespvtltd@gmail.com') {
-      window.location.href = '/home';
+      // Use React Router navigate instead of window.location.href (P0-1 fix)
+      navigate('/home', { replace: true });
       return null;
     }
     return <AdminPanel user={user} />;
@@ -1915,7 +1721,7 @@ function OldWalletScreen({ userData }: { userData: UserData }) {
       <div className="bg-gradient-to-br from-[#1A1A1A] to-[#111111] p-8 rounded-[3rem] border border-gray-800 text-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-[#E8B84B]/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
         <p className="text-gray-500 text-xs uppercase font-bold tracking-widest mb-2">Available for Withdrawal</p>
-        <h1 className="text-5xl font-black text-[#E8B84B]">₹{(userData.wallets?.earned || 0).toLocaleString()}</h1>
+        <h1 className="text-5xl font-black text-[#E8B84B] tracking-normal">₹{(userData.wallets?.earned || 0).toLocaleString()}</h1>
         <div className="flex justify-center gap-4 mt-6">
           <div className="text-center">
             <p className="text-[10px] text-gray-500 uppercase font-bold">Pending</p>
