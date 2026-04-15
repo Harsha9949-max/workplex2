@@ -2,8 +2,38 @@
 @import "tailwindcss";
 
 /* ============================================================
+   Tailwind v4 Theme Configuration
+   Configures fonts, colors, and spacing for WorkPlex design system
+   ============================================================ */
+@theme {
+  /* Font Families - Prioritize imported Google Fonts */
+  --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Letter-spacing — neutral defaults (no aggressive negative values) */
+  --letter-spacing-tighter: 0em;
+  --letter-spacing-tight: 0em;
+  --letter-spacing-normal: 0em;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+  --letter-spacing-widest: 0.1em;
+
+  /* WorkPlex brand colors */
+  --color-gold-400: #E8B84B;
+  --color-gold-500: #D4A43C;
+  --color-gold-600: #B8892F;
+  --color-teal-400: #00C9A7;
+  --color-teal-500: #00B396;
+  --color-surface: #111111;
+  --color-surface-alt: #1A1A1A;
+  --color-dark: #0A0A0A;
+}
+
+/* ============================================================
    NUCLEAR OVERRIDE — Prevent Tailwind v4 letter-spacing collapse
-   Applied via @layer base to integrate with Tailwind's cascade
+   MUST come AFTER @theme so it overrides generated utility classes.
+   Uses @layer base for correct cascade priority.
    ============================================================ */
 @layer base {
 
@@ -51,7 +81,6 @@
   /* Fix gradient text collapse — inline-block is mandatory */
   .bg-clip-text,
   [class*="bg-clip-text"],
-  .bg-gradient-to-r.bg-clip-text,
   [class*="bg-gradient"][class*="bg-clip-text"] {
     display: inline-block !important;
     -webkit-background-clip: text !important;
@@ -59,39 +88,20 @@
   }
 
   /* Prevent text compression in flex/grid containers */
+  .flex>*,
+  .grid>*,
   .min-w-0 {
     min-width: 0;
   }
 }
 
 /* ============================================================
-   Tailwind v4 Theme Configuration
-   Configures fonts, colors, and spacing for WorkPlex design system
+   Component utility classes
    ============================================================ */
-@theme {
-  /* Font Families - Prioritize imported Google Fonts */
-  --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-  /* Letter-spacing — neutral defaults (no aggressive negative values) */
-  --letter-spacing-tighter: 0em;
-  --letter-spacing-tight: 0em;
-  --letter-spacing-normal: 0em;
-  --letter-spacing-wide: 0.025em;
-  --letter-spacing-wider: 0.05em;
-  --letter-spacing-widest: 0.1em;
-  /* NOTE: Large text sizes override these in @layer base below */
-
-  /* WorkPlex brand colors */
-  --color-gold-400: #E8B84B;
-  --color-gold-500: #D4A43C;
-  --color-gold-600: #B8892F;
-  --color-teal-400: #00C9A7;
-  --color-teal-500: #00B396;
-  --color-surface: #111111;
-  --color-surface-alt: #1A1A1A;
-  --color-dark: #0A0A0A;
+@layer components {
+  .text-gradient {
+    @apply bg-clip-text text-transparent;
+  }
 }
 
 /* ============================================================

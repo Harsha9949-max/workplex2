@@ -365,8 +365,8 @@ const LandingPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h2
-              className="text-3xl md:text-4xl font-bold uppercase mb-4 font-display"
-              style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
+              className="text-3xl md:text-4xl font-bold uppercase mb-4 font-display tracking-normal"
+              style={{ lineHeight: 1.15, letterSpacing: '0.01em' }}
             >
               Our Venture Ecosystem
             </h2>
