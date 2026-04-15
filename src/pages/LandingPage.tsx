@@ -104,41 +104,26 @@ const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white overflow-hidden relative">
-      {/* Background Effects */}
-      <div className="fixed inset-0 pointer-events-none">
-        {/* Animated Radial Pulses */}
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#E8B84B]/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#00C9A7]/10 rounded-full blur-3xl"
-        />
-
-        {/* Grid Pattern */}
+      {/* Glow Orbs Background - Obsidian Foundry Edition */}
+      <div className="fixed inset-0 pointer-events-none opacity-60">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00C9A7]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#E8B84B]/5 rounded-full blur-[120px]" />
+        
+        {/* Subtle Ambient Grid */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.04]"
           style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-            backgroundSize: '60px 60px',
-            maskImage: 'radial-gradient(ellipse at center, black 30%, transparent 70%)',
-            WebkitMaskImage: 'radial-gradient(ellipse at center, black 30%, transparent 70%)',
+            backgroundImage: `linear-gradient(rgba(229,226,225,0.2) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(229,226,225,0.2) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px',
+            maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)',
+            WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)',
           }}
         />
 
         {/* Grain Overlay */}
         <div
-          className="absolute inset-0 opacity-[0.015]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
           }}
@@ -172,8 +157,7 @@ const LandingPage: React.FC = () => {
                 </svg>
               </div>
               <span
-                className="text-xl font-bold tracking-wider"
-                style={{ fontFamily: 'Outfit, sans-serif' }}
+                className="text-xl font-bold tracking-wider font-display"
               >
                 WORKPLEX
               </span>
@@ -299,18 +283,15 @@ const LandingPage: React.FC = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-bold uppercase tracking-tight mb-6"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            className="text-4xl md:text-6xl lg:text-8xl font-bold uppercase mb-6 font-display"
+            style={{ lineHeight: 1.1, letterSpacing: '0.01em', overflow: 'visible' }}
           >
             <span className="text-white">Work From Home</span>
             <br />
-            <span className="relative inline-block">
-              <span
-                className="bg-gradient-to-r from-amber-400 via-amber-500 to-teal-400 bg-clip-text text-transparent"
-                style={{ textShadow: '0 0 40px rgba(232,184,75,0.3)' }}
-              >
-                Earn Daily
-              </span>
+            <span
+              className="inline-block bg-gradient-to-r from-amber-400 via-amber-500 to-teal-400 bg-clip-text text-transparent pb-2"
+            >
+              Earn Daily
             </span>
           </motion.h1>
 
@@ -385,8 +366,8 @@ const LandingPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h2
-              className="text-3xl md:text-4xl font-bold uppercase tracking-tight mb-4"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-3xl md:text-4xl font-bold uppercase mb-4 font-display"
+              style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
             >
               Our Venture Ecosystem
             </h2>
@@ -408,8 +389,7 @@ const LandingPage: React.FC = () => {
                 className="px-8 py-4 rounded-2xl border border-white/[0.03] bg-white/[0.02] cursor-pointer transition-all"
               >
                 <span
-                  className="text-xl md:text-2xl font-bold text-gray-500 hover:text-amber-400 transition-colors tracking-wider"
-                  style={{ fontFamily: 'Outfit, sans-serif' }}
+                  className="text-xl md:text-2xl font-bold text-gray-500 hover:text-amber-400 transition-colors tracking-wider font-display"
                 >
                   {venture}
                 </span>
@@ -431,10 +411,10 @@ const LandingPage: React.FC = () => {
             className="text-center mb-16"
           >
             <h2
-              className="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-3xl md:text-5xl font-bold uppercase mb-4 font-display"
+              style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
             >
-              Simple Tasks. <span className="text-amber-400">Real Earnings.</span>
+              Simple Tasks. <span className="inline-block text-amber-400">Real Earnings.</span>
             </h2>
           </motion.div>
 
@@ -534,10 +514,10 @@ const LandingPage: React.FC = () => {
             className="text-center mb-16"
           >
             <h2
-              className="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-4"
-              style={{ fontFamily: 'Outfit, sans-serif' }}
+              className="text-3xl md:text-5xl font-bold uppercase mb-4 font-display"
+              style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
             >
-              Climb the <span className="text-teal-400">Leaderboard</span>
+              Climb the <span className="inline-block text-teal-400">Leaderboard</span>
             </h2>
             <p className="text-gray-400 max-w-xl mx-auto">
               Gamified rewards system that keeps you motivated
@@ -598,11 +578,11 @@ const LandingPage: React.FC = () => {
               </motion.div>
 
               <h2
-                className="text-4xl md:text-6xl font-bold uppercase tracking-tight mb-6"
-                style={{ fontFamily: 'Outfit, sans-serif' }}
+                className="text-4xl md:text-6xl font-bold uppercase mb-6 font-display"
+                style={{ lineHeight: 1.1, letterSpacing: '0.01em' }}
               >
                 Start Earning{' '}
-                <span className="bg-gradient-to-r from-amber-400 to-teal-400 bg-clip-text text-transparent">
+                <span className="inline-block bg-gradient-to-r from-amber-400 to-teal-400 bg-clip-text text-transparent pb-2">
                   TONIGHT
                 </span>
               </h2>
@@ -640,7 +620,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <Zap size={20} className="text-amber-400" />
-            <span className="text-sm font-semibold tracking-wider" style={{ fontFamily: 'Outfit, sans-serif' }}>
+            <span className="text-sm font-semibold tracking-wider font-display">
               WORKPLEX
             </span>
           </div>

@@ -79,24 +79,24 @@ const AuthPage = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-md mx-auto"
+      className="w-full max-w-md mx-auto relative z-10"
     >
-      <div className="bg-[#1A1A1A] rounded-2xl p-8 border border-neutral-800">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-            <ShieldCheck className="w-8 h-8 text-black" />
+      <div className="bg-[#111111]/70 backdrop-blur-2xl rounded-2xl p-8 border border-white/[0.03] shadow-[0_0_40px_rgba(232,184,75,0.06)]">
+        <div className="text-center mb-10">
+          <div className="w-16 h-16 bg-gradient-to-br from-[#FFD57E] to-[#E8B84B] rounded-2xl mx-auto mb-6 flex items-center justify-center shadow-[0_0_20px_rgba(232,184,75,0.3)]">
+            <ShieldCheck className="w-8 h-8 text-[#402D00]" />
           </div>
-          <h1 className="text-2xl font-bold text-white">Welcome to WorkPlex</h1>
-          <p className="text-neutral-400 mt-2">Sign in to continue</p>
+          <h1 className="text-4xl font-bold text-[#E5E2E1] font-display mb-3 tracking-normal">Elite Access</h1>
+          <p className="text-[#D2C5B0] font-sans text-sm">Sign in to control your enterprise footprint</p>
         </div>
 
         <button
           onClick={handleGoogleSignIn}
           disabled={loading}
-          className="w-full bg-white hover:bg-neutral-100 text-black font-semibold py-3 px-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-200 mb-4"
+          className="w-full bg-[#1A1A1A] hover:bg-[#201F1F] text-[#E5E2E1] font-semibold py-4 px-4 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 mb-4 border border-[#4E4636]/15 hover:border-[#4E4636]/40"
         >
           {loading ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
+            <Loader2 className="w-5 h-5 animate-spin text-[#E8B84B]" />
           ) : (
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -108,17 +108,17 @@ const AuthPage = () => {
           Continue with Google
         </button>
 
-        <div className="flex items-center gap-4 my-6">
-          <div className="flex-1 h-px bg-neutral-800" />
-          <span className="text-neutral-500 text-sm">OR</span>
-          <div className="flex-1 h-px bg-neutral-800" />
+        <div className="flex items-center gap-4 my-6 opacity-70">
+          <div className="flex-1 h-px bg-[#4E4636]/30" />
+          <span className="text-[#D2C5B0] text-xs font-bold uppercase tracking-widest">OR</span>
+          <div className="flex-1 h-px bg-[#4E4636]/30" />
         </div>
 
         <button
           onClick={() => setAuthStep('phone')}
-          className="w-full bg-[#1A1A1A] hover:bg-neutral-800 text-white font-medium py-3 px-4 rounded-xl border border-neutral-700 flex items-center justify-center gap-3 transition-all duration-200"
+          className="w-full bg-gradient-to-br from-[#FFD57E] to-[#E8B84B] hover:opacity-90 text-[#402D00] font-bold py-4 px-4 rounded-xl shadow-[0_4px_14px_rgba(232,184,75,0.25)] flex items-center justify-center gap-3 transition-all duration-300"
         >
-          <Phone className="w-5 h-5 text-amber-400" />
+          <Phone className="w-5 h-5 text-[#402D00]" />
           Continue with Phone
         </button>
 
@@ -126,7 +126,7 @@ const AuthPage = () => {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-red-500 text-sm mt-4 text-center"
+            className="text-red-400 text-sm mt-6 text-center font-medium"
           >
             {error}
           </motion.p>
@@ -136,7 +136,14 @@ const AuthPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Glow Orbs Background */}
+      <div className="absolute inset-0 pointer-events-none opacity-40">
+        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#00C9A7]/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-[#E8B84B]/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-[0.03] Mix-blend-overlay" />
+      </div>
+
       <div id="recaptcha-container" ref={recaptchaRef}></div>
 
       <AnimatePresence mode="wait">

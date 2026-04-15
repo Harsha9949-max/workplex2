@@ -30,6 +30,7 @@ export interface WalletData {
 export interface UserData {
   uid: string;
   name: string;
+  phone?: string;
   kycDone: boolean;
   upiId: string;
   bankAccount: string;

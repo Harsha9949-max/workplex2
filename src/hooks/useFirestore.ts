@@ -19,6 +19,7 @@ import { db } from '../firebase';
 
 // Types
 export interface UserData {
+  [key: string]: any;
   name: string;
   phone: string;
   photoURL: string;

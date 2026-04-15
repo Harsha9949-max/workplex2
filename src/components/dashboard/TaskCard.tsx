@@ -45,17 +45,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onAccept, onSkip }) =>
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="bg-[#111111] rounded-2xl p-4 border border-gray-800/50 min-w-[280px] max-w-[320px] flex-shrink-0"
+      whileHover={{ y: -4, backgroundColor: 'rgba(26,26,26,0.8)' }}
+      transition={{ duration: 0.2 }}
+      className="glass rounded-3xl p-5 min-w-[280px] max-w-[320px] flex-shrink-0 relative overflow-hidden group"
       role="article"
       aria-label={`Task: ${task.title}`}
     >
+      {/* Background radial glow on hover */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E8B84B] rounded-full mix-blend-screen filter blur-[60px] opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none" />
+
       {/* Task Header */}
-      <div className="mb-3">
-        <h4 className="text-white font-bold text-base mb-2">{task.title}</h4>
+      <div className="mb-4 relative z-10">
+        <h4 className="text-white font-bold text-lg mb-2 font-display">{task.title}</h4>
         <div className="flex items-center gap-2">
           <span
-            className={`px-2 py-1 rounded-md text-xs font-semibold border ${getVentureColor(task.venture)}`}
+            className={`px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase border border-white/5 ${getVentureColor(task.venture)}`}
           >
             {task.venture}
           </span>
@@ -63,36 +67,36 @@ export const TaskCard: React.FC<TaskCardProps> = ({ task, onAccept, onSkip }) =>
       </div>
 
       {/* Earning Amount */}
-      <div className="mb-3">
-        <span className="text-[#E8B84B] font-black text-2xl">
+      <div className="mb-4 relative z-10">
+        <span className="inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] font-black text-3xl font-display pb-1">
           {formatCurrency(task.earning)}
         </span>
       </div>
 
       {/* Deadline Timer */}
-      <div className={`flex items-center gap-2 mb-4 ${isUrgent ? 'text-red-500' : 'text-gray-400'}`}>
-        <Clock size={14} className={isUrgent ? 'animate-pulse' : ''} />
-        <span className="text-sm font-mono">
+      <div className={`flex items-center gap-2 mb-6 ${isUrgent ? 'text-red-500' : 'text-gray-400'} relative z-10`}>
+        <Clock size={16} className={isUrgent ? 'animate-pulse' : ''} />
+        <span className="text-sm font-semibold tracking-wide">
           {timeRemaining > 0 ? formatTime(timeRemaining) : 'Expired'}
         </span>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex gap-2">
+      <div className="flex gap-3 relative z-10">
         <button
           onClick={() => onAccept(task.id)}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] min-h-[44px]"
+          className="flex-1 bg-gradient-to-br from-[#FFD57E] to-[#E8B84B] hover:shadow-[0_0_20px_rgba(232,184,75,0.4)] text-[#402D00] font-black py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] min-h-[48px]"
           aria-label={`Accept task: ${task.title}`}
         >
-          <Check size={16} />
+          <Check size={18} strokeWidth={3} />
           Accept
         </button>
         <button
           onClick={() => onSkip(task.id)}
-          className="px-3 py-2.5 bg-[#1A1A1A] hover:bg-[#2A2A2A] text-gray-400 font-semibold rounded-lg flex items-center justify-center transition-all active:scale-[0.98] min-h-[44px]"
+          className="px-4 py-3 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white font-bold rounded-xl flex items-center justify-center transition-all active:scale-[0.98] min-h-[48px] border border-white/5"
           aria-label={`Skip task: ${task.title}`}
         >
-          <X size={16} />
+          <X size={20} />
         </button>
       </div>
     </motion.div>

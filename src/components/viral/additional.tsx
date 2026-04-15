@@ -324,7 +324,7 @@ export const ReferralQRModal = ({ isOpen, onClose, userId, username }) => {
     if (canvas) {
       const downloadLink = document.createElement('a');
       downloadLink.download = `workplex-referral-${username || userId}.png`;
-      downloadLink.href = canvas.toDataURL();
+      downloadLink.href = (canvas as HTMLCanvasElement).toDataURL();
       downloadLink.click();
       toast.success('QR Code downloaded!');
     }

@@ -9,7 +9,7 @@ import { motion } from 'framer-motion';
 import { Home, ListTodo, Wallet, UserCircle, Trophy } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab?: 'home' | 'tasks' | 'leaderboard' | 'wallet' | 'profile';
+  activeTab?: 'home' | 'tasks' | 'leaderboard' | 'wallet' | 'profile' | 'coupon';
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeTab = 'home' }) => {

@@ -26,7 +26,7 @@ export const lazyWithRetry = <T extends ComponentType<any>>(
       // Retry once on failure
       return importFunc();
     })
-  ) as T;
+  ) as any;
 };
 
 // ============================================================
@@ -34,32 +34,32 @@ export const lazyWithRetry = <T extends ComponentType<any>>(
 // ============================================================
 
 // Pages - Load on demand
-export const LazyAuthPage = lazyWithRetry(() => import('./pages/AuthPage'));
-export const LazyLandingPage = lazyWithRetry(() => import('./pages/LandingPage'));
+export const LazyAuthPage = lazyWithRetry(() => import('../pages/AuthPage'));
+export const LazyLandingPage = lazyWithRetry(() => import('../pages/LandingPage'));
 
 // Main App - Load after auth
-export const LazyMainApp = lazyWithRetry(() => import('./App').then(mod => ({ default: mod.MainApp })));
+export const LazyMainApp = lazyWithRetry(() => import('../App').then(mod => ({ default: mod.MainApp })));
 
 // Feature Modules - Load only when needed
-export const LazyTasksScreen = lazyWithRetry(() => import('./components/tasks').then(mod => ({ default: mod.TasksScreen })));
-export const LazyWalletScreen = lazyWithRetry(() => import('./components/wallet').then(mod => ({ default: mod.WalletScreen })));
-export const LazyCouponDashboard = lazyWithRetry(() => import('./components/coupon').then(mod => ({ default: mod.CouponDashboard })));
-export const LazyLeaderboardScreen = lazyWithRetry(() => import('./components/gamification/index').then(mod => ({ default: mod.LeaderboardScreen })));
+export const LazyTasksScreen = lazyWithRetry(() => import('../components/tasks').then(mod => ({ default: mod.TasksScreen })));
+export const LazyWalletScreen = lazyWithRetry(() => import('../components/wallet').then(mod => ({ default: mod.WalletScreen })));
+export const LazyCouponDashboard = lazyWithRetry(() => import('../components/coupon').then(mod => ({ default: mod.CouponDashboard })));
+export const LazyLeaderboardScreen = lazyWithRetry(() => import('../components/gamification/index').then(mod => ({ default: mod.LeaderboardScreen })));
 
 // Admin - Separate chunk
-export const LazyAdminPanel = lazyWithRetry(() => import('./AdminPanel'));
+export const LazyAdminPanel = lazyWithRetry(() => import('../AdminPanel'));
 
 // Partner Store - Separate chunk
-export const LazyPartnerDashboard = lazyWithRetry(() => import('./components/partnerStore').then(mod => ({ default: mod.PartnerDashboard })));
-export const LazyShopSetupWizard = lazyWithRetry(() => import('./components/partnerStore').then(mod => ({ default: mod.ShopSetupWizard })));
-export const LazyPublicShopPage = lazyWithRetry(() => import('./components/partnerStore').then(mod => ({ default: mod.PublicShopPage })));
+export const LazyPartnerDashboard = lazyWithRetry(() => import('../components/partnerStore').then(mod => ({ default: mod.PartnerDashboard })));
+export const LazyShopSetupWizard = lazyWithRetry(() => import('../components/partnerStore').then(mod => ({ default: mod.ShopSetupWizard })));
+export const LazyPublicShopPage = lazyWithRetry(() => import('../components/partnerStore').then(mod => ({ default: mod.PublicShopPage })));
 
 // Viral Components - Separate chunk
-export const LazyPublicProfile = lazyWithRetry(() => import('./components/viral').then(mod => ({ default: mod.PublicProfile })));
-export const LazyTeamChat = lazyWithRetry(() => import('./components/viral').then(mod => ({ default: mod.TeamChat })));
+export const LazyPublicProfile = lazyWithRetry(() => import('../components/viral').then(mod => ({ default: mod.PublicProfile })));
+export const LazyTeamChat = lazyWithRetry(() => import('../components/viral').then(mod => ({ default: mod.TeamChat })));
 
 // Profile - Separate chunk
-export const LazyProfileScreen = lazyWithRetry(() => import('./components/roles').then(mod => ({ default: mod.ProfileScreen })));
+export const LazyProfileScreen = lazyWithRetry(() => import('../components/roles').then(mod => ({ default: mod.ProfileScreen })));
 
 // ============================================================
 // Suspense Wrapper with Fallback

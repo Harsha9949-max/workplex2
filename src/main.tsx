@@ -1,14 +1,18 @@
 import React, { ReactNode, Component, ErrorInfo } from 'react';
-import { createRoot } from 'react-dom/client';
+import { createRoot, Root } from 'react-dom/client';
 import App from './App';
 import './index.css';
 
 // ============================================================
-// Debug Logging - Track Boot Sequence
+// Debug Logging - Track Boot Sequence (Safe)
 // ============================================================
 const log = (msg: string, data?: unknown) => {
-  const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
-  console.log(`[WorkPlex ${timestamp}] ${msg}`, data || '');
+  try {
+    const timestamp = new Date().toISOString().split('T')[1].split('.')[0];
+    console.log(`[WorkPlex ${timestamp}] ${msg}`, data ?? '');
+  } catch {
+    // Logging should never crash the app
+  }
 };
 
 log('🚀 Module loaded - Starting boot sequence');
@@ -17,22 +21,30 @@ log('🚀 Module loaded - Starting boot sequence');
 // Global Error Boundary Component
 // Catches all React errors and prevents blank screen crashes
 // ============================================================
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
 interface ErrorBoundaryState {
   hasError: boolean;
   error: Error | null;
-  hasFallback: boolean;
+  errorInfo: string | null;
 }
 
-class GlobalErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
-  state: ErrorBoundaryState = { hasError: false, error: null, hasFallback: false };
+class GlobalErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     log('❌ Error caught by GlobalErrorBoundary', error.message);
-    return { hasError: true, error, hasFallback: true };
+    return { hasError: true, error, errorInfo: null };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     log('🔍 Component stack:', errorInfo.componentStack);
+    this.setState({ errorInfo: errorInfo.componentStack });
   }
 
   private handleRefresh = () => {
@@ -43,18 +55,14 @@ class GlobalErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
   private handleClearCache = async () => {
     log('🧹 Clearing all caches');
     try {
-      // Clear service workers
       if ('serviceWorker' in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
         await Promise.all(regs.map(reg => reg.unregister()));
       }
-      // Clear caches
       if ('caches' in window) {
         const names = await caches.keys();
         await Promise.all(names.map(name => caches.delete(name)));
       }
-      // Clear localStorage (optional)
-      // localStorage.clear();
       window.location.reload();
     } catch (err) {
       log('⚠️ Cache clear failed', err);
@@ -119,10 +127,10 @@ class GlobalErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
               Clear Cache & Reload
             </button>
           </div>
-          {import.meta.env.DEV && this.state.error && (
+          {import.meta.env.DEV && this.state.errorInfo && (
             <details style={{ marginTop: '2rem', maxWidth: '48rem', width: '100%', textAlign: 'left' }}>
               <summary style={{ cursor: 'pointer', color: '#6B7280', fontSize: '0.75rem' }}>
-                🔍 Error Details (Development Mode)
+                🔍 Component Stack (Development Mode)
               </summary>
               <pre style={{
                 marginTop: '0.5rem',
@@ -135,7 +143,7 @@ class GlobalErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
                 whiteSpace: 'pre-wrap',
                 wordBreak: 'break-word'
               }}>
-                {this.state.error.stack}
+                {this.state.errorInfo}
               </pre>
             </details>
           )}
@@ -149,20 +157,29 @@ class GlobalErrorBoundary extends Component<{ children: ReactNode }, ErrorBounda
 
 // ============================================================
 // Safe Splash Removal - Idempotent and Non-Blocking
+// Called ONLY after root.render() completes successfully
 // ============================================================
+let splashRemoved = false;
+
 const removeSplash = () => {
+  if (splashRemoved) return;
+  splashRemoved = true;
+
   try {
     const splash = document.getElementById('workplex-splash');
-    if (splash && !splash.classList.contains('removing')) {
+    if (splash) {
       log('✨ Removing splash screen');
       splash.classList.add('removing');
-      splash.style.opacity = '0';
-      splash.style.transition = 'opacity 0.3s ease-out';
-      setTimeout(() => {
-        if (splash.parentNode) {
-          splash.parentNode.removeChild(splash);
-        }
-      }, 350);
+      // Use rAF to ensure the class change is painted before transition
+      requestAnimationFrame(() => {
+        splash.style.opacity = '0';
+        splash.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => {
+          if (splash.parentNode) {
+            splash.parentNode.removeChild(splash);
+          }
+        }, 350);
+      });
     }
   } catch (err) {
     log('⚠️ Splash removal failed (non-critical)', err);
@@ -170,28 +187,113 @@ const removeSplash = () => {
 };
 
 // ============================================================
-// Main Initialization - Wrapped in Try/Catch
+// Fallback UI Renderer - For Critical Failures
 // ============================================================
-log('🔧 Initializing React root');
+function renderFallbackUI(error: unknown) {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error';
+  const errorStack = error instanceof Error ? (error.stack ?? '') : '';
 
-try {
-  // Verify DOM is ready
-  if (document.readyState === 'loading') {
-    log('⏳ DOM still loading - waiting');
-    document.addEventListener('DOMContentLoaded', initializeApp);
-  } else {
-    log('✅ DOM ready - proceeding');
-    initializeApp();
+  log('🆘 Rendering fallback UI');
+
+  // Remove splash first
+  removeSplash();
+
+  // Replace root content with error UI
+  const rootElement = document.getElementById('root');
+  if (rootElement) {
+    const isDev = import.meta.env.DEV;
+    rootElement.innerHTML = `
+      <div style="min-height:100vh;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;font-family:system-ui,-apple-system,sans-serif;color:#fff;text-align:center;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1.5rem;">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;">Failed to Load Application</h1>
+        <p style="color:#9CA3AF;margin-bottom:0.5rem;max-width:32rem;">${errorMessage}</p>
+        ${isDev && errorStack ? `<pre style="color:#F87171;font-size:0.7rem;background:#111827;padding:1rem;border-radius:0.5rem;overflow:auto;max-width:48rem;text-align:left;margin-top:1rem;white-space:pre-wrap;word-break:break-word;">${errorStack}</pre>` : ''}
+        <div style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;justify-content:center;">
+          <button onclick="window.location.reload()" style="background:#E8B84B;color:#000;font-weight:600;padding:0.75rem 1.5rem;border-radius:0.5rem;border:none;cursor:pointer;font-size:0.875rem;">Refresh Page</button>
+          <button id="clear-cache-btn" style="background:transparent;color:#9CA3AF;font-weight:600;padding:0.75rem 1.5rem;border-radius:0.5rem;border:1px solid #374151;cursor:pointer;font-size:0.875rem;">Clear Cache & Reload</button>
+        </div>
+      </div>
+    `;
+
+    // Attach clear cache handler
+    const clearBtn = document.getElementById('clear-cache-btn');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', async () => {
+        try {
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(r => r.unregister()));
+          }
+          if ('caches' in window) {
+            const names = await caches.keys();
+            await Promise.all(names.map(n => caches.delete(n)));
+          }
+        } catch { /* ignore */ }
+        window.location.reload();
+      });
+    }
   }
-} catch (fatalError) {
-  log('💀 FATAL: Initialization threw an error', fatalError);
-  renderFallbackUI(fatalError);
 }
 
 // ============================================================
-// Initialize App Function - Separated for Clarity
+// Main Initialization - Wrapped in Try/Catch with Auto-Reload
 // ============================================================
-function initializeApp() {
+log('🔧 Initializing React root');
+
+// Signal to index.html's Asset Load Detector that modules loaded successfully
+// This cancels the 5-second timeout that would show a Connection Error UI
+try {
+  (window as any).__WORKPLEX_BOOT_COMPLETE = true;
+} catch { /* ignore */ }
+
+// Auto-reload counter - prevents infinite reload loops
+const RELOAD_KEY = '__workplex_reload_count';
+const MAX_RELOADS = 3;
+const RELOAD_WINDOW_MS = 30000; // 30 seconds
+
+function shouldAttemptReload(): boolean {
+  try {
+    const now = Date.now();
+    const stored = localStorage.getItem(RELOAD_KEY);
+    if (stored) {
+      const { count, timestamp } = JSON.parse(stored);
+      // Reset counter if outside the time window
+      if (now - timestamp > RELOAD_WINDOW_MS) {
+        localStorage.setItem(RELOAD_KEY, JSON.stringify({ count: 1, timestamp: now }));
+        return true;
+      }
+      if (count >= MAX_RELOADS) {
+        console.warn(`[WorkPlex] Max auto-reloads (${MAX_RELOADS}) reached - stopping to prevent loop`);
+        return false;
+      }
+      localStorage.setItem(RELOAD_KEY, JSON.stringify({ count: count + 1, timestamp }));
+      return true;
+    }
+    localStorage.setItem(RELOAD_KEY, JSON.stringify({ count: 1, timestamp: now }));
+    return true;
+  } catch {
+    return true; // If localStorage fails, allow reload
+  }
+}
+
+function scheduleReload(reason: string, delayMs = 3000) {
+  if (!shouldAttemptReload()) {
+    log('🚫 Auto-reload blocked (max attempts reached). User must manually refresh.');
+    return;
+  }
+  log(`🔄 Scheduling auto-reload in ${delayMs / 1000}s: ${reason}`);
+  setTimeout(() => {
+    log('🔄 Executing auto-reload');
+    window.location.reload();
+  }, delayMs);
+}
+
+// Ensure we don't initialize before DOM is ready
+function boot() {
   try {
     const rootElement = document.getElementById('root');
 
@@ -199,14 +301,19 @@ function initializeApp() {
       throw new Error('#root element not found in DOM. Check index.html structure.');
     }
 
-    // Check if React already rendered (prevent double render)
-    if (rootElement.querySelector('[data-reactroot]') || rootElement.childElementCount > 1) {
-      log('⚠️ React may have already rendered - skipping');
+    // Prevent double render (idempotent)
+    if (rootElement.hasAttribute('data-react-rendered')) {
+      log('⚠️ React already rendered - skipping');
       return;
     }
 
+    // Verify critical DOM elements exist
+    if (!document.getElementById('workplex-splash')) {
+      log('⚠️ Splash screen not found (may have been removed by stale SW)');
+    }
+
     log('🎨 Creating React root');
-    const root = createRoot(rootElement);
+    const root: Root = createRoot(rootElement);
 
     log('🚀 Rendering App component');
     root.render(
@@ -217,104 +324,104 @@ function initializeApp() {
       </React.StrictMode>
     );
 
+    // Mark as rendered to prevent double-init
+    rootElement.setAttribute('data-react-rendered', 'true');
+
     log('✅ React render successful - Removing splash');
-    // Remove splash AFTER React has rendered
-    requestAnimationFrame(() => {
-      removeSplash();
-    });
+    // Remove splash AFTER React has rendered (synchronous guarantee)
+    removeSplash();
 
   } catch (error) {
-    log('❌ React render failed', error);
-    renderFallbackUI(error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    log('❌ React render/initialization failed', error);
+
+    // Check if this looks like a module import failure
+    const isModuleError = errMsg.includes('Failed to resolve') ||
+      errMsg.includes('Failed to load') ||
+      errMsg.includes('Cannot read properties') ||
+      errMsg.includes('is not defined') ||
+      errMsg.includes('is not a function');
+
+    if (isModuleError) {
+      log('📦 Module load error detected - scheduling auto-reload');
+      renderFallbackUI(error);
+      scheduleReload('ModuleLoadError: ' + errMsg, 3000);
+    } else {
+      // Non-module error - show fallback without auto-reload
+      renderFallbackUI(error);
+    }
   }
 }
 
-// ============================================================
-// Fallback UI Renderer - For Critical Failures
-// ============================================================
-function renderFallbackUI(error: unknown) {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown initialization error';
-  const errorStack = error instanceof Error ? error.stack : '';
-
-  log('🆘 Rendering fallback UI');
-
-  // Remove splash first
-  removeSplash();
-
-  // Replace root content with error UI
-  const rootElement = document.getElementById('root');
-  if (rootElement) {
-    rootElement.innerHTML = `
-      <div style="min-height:100vh;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;font-family:system-ui,-apple-system,sans-serif;color:#fff;text-align:center;">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1.5rem;">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
-        <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;">Failed to Load Application</h1>
-        <p style="color:#9CA3AF;margin-bottom:0.5rem;max-width:32rem;">${errorMessage}</p>
-        ${import.meta.env.DEV && errorStack ? `<pre style="color:#F87171;font-size:0.7rem;background:#111827;padding:1rem;border-radius:0.5rem;overflow:auto;max-width:48rem;text-align:left;margin-top:1rem;white-space:pre-wrap;word-break:break-word;">${errorStack}</pre>` : ''}
-        <button onclick="window.location.reload()" style="background:#E8B84B;color:#000;font-weight:600;padding:0.75rem 1.5rem;border-radius:0.5rem;border:none;cursor:pointer;font-size:0.875rem;margin-top:1.5rem;">Refresh Page</button>
-      </div>
-    `;
-  }
+// Handle DOM readiness
+if (document.readyState === 'loading') {
+  log('⏳ DOM still loading - waiting for DOMContentLoaded');
+  document.addEventListener('DOMContentLoaded', boot, { once: true });
+} else {
+  log('✅ DOM ready - proceeding');
+  boot();
 }
 
 // ============================================================
 // Service Worker Registration - Idempotent (No Infinite Loops)
+// Only ONE registration point (removed duplicate from index.html)
 // ============================================================
 if ('serviceWorker' in navigator) {
   log('🔧 Registering Service Worker');
 
-  let swRegistrationAttempted = false;
+  // Guard: prevent multiple registrations in the same session
+  const SW_REGISTERED_KEY = '__workplex_sw_registered';
+  if ((window as any)[SW_REGISTERED_KEY]) {
+    log('⚠️ SW already registered in this session - skipping');
+  } else {
+    (window as any)[SW_REGISTERED_KEY] = true;
 
-  window.addEventListener('load', () => {
-    // Delay SW registration to prioritize page load
-    setTimeout(async () => {
-      if (swRegistrationAttempted) {
-        log('⚠️ SW registration already attempted - skipping');
-        return;
-      }
-      swRegistrationAttempted = true;
+    window.addEventListener('load', () => {
+      // Delay SW registration to prioritize main app load
+      setTimeout(async () => {
+        try {
+          const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+          log('✅ Service Worker registered:', registration.scope);
 
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-        log('✅ Service Worker registered:', registration.scope);
+          // Idempotent update flow - only reload if a previous controller exists
+          registration.addEventListener('updatefound', () => {
+            const newWorker = registration.installing;
+            if (!newWorker) return;
 
-        // Idempotent update flow - only reload if controller exists
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (!newWorker) return;
+            log('🔄 New service worker installing');
 
-          log('🔄 New service worker installing');
+            newWorker.addEventListener('statechange', () => {
+              log('🔍 SW state changed:', newWorker.state);
 
-          newWorker.addEventListener('statechange', () => {
-            log('🔍 SW state changed:', newWorker.state);
-
-            // Only reload if we have an active controller AND new worker is installed
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              log('🔄 New version ready - reloading');
-              window.location.reload();
-            }
+              // Only reload if we have an active controller AND new worker is installed
+              // This prevents infinite loops on first-ever install
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                log('🔄 New version available - reloading');
+                window.location.reload();
+              }
+            });
           });
-        });
 
-        // Handle controller change - only reload once
-        let controllerChangedHandled = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-          if (controllerChangedHandled) return;
-          controllerChangedHandled = true;
+          // Handle controller change - only reload once per session
+          let controllerChangedHandled = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (controllerChangedHandled) {
+              log('⚠️ controllerchange already handled this session');
+              return;
+            }
+            controllerChangedHandled = true;
 
-          log('🔄 Controller changed - reloading');
-          window.location.reload();
-        });
+            log('🔄 Controller changed - reloading');
+            window.location.reload();
+          });
 
-      } catch (error) {
-        log('❌ Service Worker registration failed (non-critical):', error);
-        // Don't block app - SW failure shouldn't break the app
-      }
-    }, 1500); // 1.5s delay to prioritize main app load
-  });
+        } catch (error) {
+          log('❌ Service Worker registration failed (non-critical):', error);
+          // Don't block app - SW failure shouldn't crash the app
+        }
+      }, 2000); // 2s delay to prioritize main app load
+    });
+  }
 } else {
   log('⚠️ Service Workers not supported in this browser');
 }

@@ -22,6 +22,14 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+      // Handle native .node files (TailwindCSS oxide, etc.)
+      // Prevents "No loader is configured for .node files" crash
+      dedupe: ['tailwindcss', '@tailwindcss/vite'],
+    },
+
+    ssr: {
+      // Don't bundle native modules in SSR
+      noExternal: ['@tailwindcss/oxide'],
     },
 
     // Performance optimizations
@@ -74,6 +82,10 @@ export default defineConfig(({ mode }) => {
     },
 
     server: {
+      // EXPLICIT host and port - prevents ambiguous binding
+      host: '0.0.0.0',
+      port: 2532,
+      strictPort: true, // Fail if port is in use (don't silently switch to another)
       hmr: process.env.DISABLE_HMR !== 'true',
       // Pre-warm critical files
       warmup: {
@@ -87,24 +99,47 @@ export default defineConfig(({ mode }) => {
       },
       // Enable compression
       cors: true,
+      // Force reload when dependency graph changes
+      watch: {
+        usePolling: true,
+        ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
+      },
     },
 
     optimizeDeps: {
       // Pre-bundle critical dependencies for instant dev server
+      // This prevents the "Logo then Black Screen" issue where React modules
+      // are requested but not yet bundled by Vite's dependency optimizer
       include: [
         'react',
         'react-dom',
+        'react-dom/client',
         'react-router-dom',
         'firebase/app',
         'firebase/auth',
         'firebase/firestore',
+        'firebase/storage',
+        'firebase/functions',
         'framer-motion',
         'lucide-react',
+        'react-hot-toast',
+        'qrcode.react',
+        'recharts',
+        'canvas-confetti',
+        'crypto-js',
       ],
-      // Don't optimize crypto-js (causes issues)
-      exclude: ['crypto-js'],
-      // Force optimization on first load
-      force: false,
+      // These packages use native .node files or have bundling conflicts
+      // and MUST NOT be pre-bundled by esbuild
+      exclude: [
+        '@tailwindcss/oxide',
+        '@tailwindcss/oxide-win32-x64-msvc',
+      ],
+      // Force re-optimization on server restart to clear stale caches
+      force: true,
+      // Use esbuild for faster pre-bundling
+      esbuildOptions: {
+        target: 'esnext',
+      },
     },
 
     // Preview server optimizations

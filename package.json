@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "deep-clean": "node -e \"const fs=require('fs'),path=require('path');['node_modules','.vite','dist'].forEach(d=>{const p=path.join(__dirname,d);if(fs.existsSync(p)){console.log('Removing '+d+'...');fs.rmSync(p,{recursive:true,force:true})}});\" && npm install"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
@@ -32,6 +33,8 @@
   "devDependencies": {
     "@types/crypto-js": "^4.2.2",
     "@types/node": "^22.14.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.4.21",
     "tailwindcss": "^4.1.14",
     "typescript": "~5.8.2",

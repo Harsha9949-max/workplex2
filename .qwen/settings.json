@@ -18,7 +18,12 @@
       "Bash(git push *)",
       "Bash(npm uninstall *)",
       "Bash(del *)",
-      "Bash(firebase *)"
+      "Bash(firebase *)",
+      "Bash(curl *)",
+      "Bash(tasklist *)",
+      "Bash(cmd *)",
+      "Bash(start *)",
+      "Bash(netstat *)"
     ]
   },
   "$version": 3

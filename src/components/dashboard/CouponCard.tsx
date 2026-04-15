@@ -59,34 +59,38 @@ export const CouponCard: React.FC<CouponCardProps> = ({ couponData, loading, use
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="bg-gradient-to-br from-[#111111] to-[#1A1A1A] rounded-2xl p-5 border border-gray-800/50 relative overflow-hidden"
+      className="glass rounded-3xl p-6 relative overflow-hidden group"
       role="region"
       aria-label="Your coupon code information"
     >
       {/* Background glow effect */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-[#E8B84B]/5 rounded-full blur-3xl" />
+      <div className="absolute -top-10 -right-10 w-48 h-48 bg-[#00C9A7] rounded-full mix-blend-screen filter blur-[80px] opacity-10 pointer-events-none group-hover:opacity-20 transition-opacity duration-500" />
 
       {/* Card Title */}
-      <h3 className="text-white font-bold text-lg mb-4">Your Coupon Code</h3>
+      <h3 className="text-white font-bold text-xl mb-5 font-display hover:text-[#00C9A7] transition-colors">Your Coupon Code</h3>
 
       {/* Coupon Code Display */}
-      <div className="bg-[#0A0A0A] rounded-xl p-4 mb-4 border border-[#E8B84B]/30">
-        <code className="text-2xl font-mono font-black text-[#E8B84B] tracking-wider">
+      <div className="bg-[#0A0A0A]/60 rounded-2xl p-5 mb-5 border border-white/5 relative overflow-hidden">
+        {/* Inner glow for coupon box effect */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#E8B84B]/5 to-transparent pointer-events-none" />
+        <code className="inline-block text-3xl font-mono font-black text-transparent bg-clip-text bg-gradient-to-r from-[#FFD57E] to-[#E8B84B] tracking-widest relative z-10 pb-1">
           {couponData.code}
         </code>
       </div>
 
       {/* 24-Hour Countdown Bar */}
-      <div className="mb-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Clock size={14} className="text-gray-400" />
-          <span className="text-gray-400 text-sm">
-            {formatCountdown(timeLeft)} remaining
-          </span>
+      <div className="mb-6 relative z-10">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Clock size={16} className="text-gray-400" />
+            <span className="text-gray-300 text-sm font-semibold tracking-wide">
+              {formatCountdown(timeLeft)} remaining
+            </span>
+          </div>
         </div>
-        <div className="h-2 bg-[#0A0A0A] rounded-full overflow-hidden">
+        <div className="h-2 bg-[#0A0A0A]/80 rounded-full overflow-hidden border border-white/5">
           <motion.div
-            className="h-full rounded-full"
+            className="h-full rounded-full shadow-[0_0_10px_rgba(232,184,75,0.5)]"
             style={{
               background: `linear-gradient(90deg, ${progress > 0.7 ? '#EF4444' : '#E8B84B'} 0%, ${progress > 0.7 ? '#F59E0B' : '#00C9A7'} 100%)`,
             }}
@@ -98,12 +102,12 @@ export const CouponCard: React.FC<CouponCardProps> = ({ couponData, loading, use
       </div>
 
       {/* Usage Counter */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-gray-400 text-sm">
-          Used <span className="text-white font-bold">{couponData.usageCount}</span> times today
+      <div className="flex items-center justify-between mb-6 bg-[#0A0A0A]/40 rounded-xl p-4 border border-white/5 relative z-10">
+        <div className="text-gray-400 text-sm font-medium">
+          Used <span className="text-white font-black font-display text-lg mx-1">{couponData.usageCount}</span> times today
         </div>
-        <div className="text-gray-400 text-sm">
-          Earned: <span className="text-[#E8B84B] font-bold">Rs.{couponData.totalEarned.toFixed(2)}</span>
+        <div className="text-gray-400 text-sm font-medium">
+          Earned: <span className="text-[#00C9A7] font-black font-display text-lg ml-1 text-shadow-teal">Rs.{couponData.totalEarned.toFixed(2)}</span>
         </div>
       </div>
 
@@ -112,11 +116,11 @@ export const CouponCard: React.FC<CouponCardProps> = ({ couponData, loading, use
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="flex items-center gap-2 mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-xl"
+          className="flex items-center gap-3 mb-5 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl relative z-10"
         >
-          <AlertTriangle size={16} className="text-red-500" />
-          <span className="text-red-500 text-sm font-semibold">
-            Expires in {hoursLeft} hours
+          <AlertTriangle size={20} className="text-red-500" />
+          <span className="text-red-400 text-sm font-bold tracking-wide">
+            Expires in {hoursLeft} hours - Final Push!
           </span>
         </motion.div>
       )}
@@ -124,10 +128,10 @@ export const CouponCard: React.FC<CouponCardProps> = ({ couponData, loading, use
       {/* Share Button */}
       <button
         onClick={handleShareWhatsApp}
-        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-[0.98] min-h-[44px]"
+        className="w-full bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#32DF73] hover:to-[#17A596] shadow-[0_0_20px_rgba(37,211,102,0.3)] hover:shadow-[0_0_30px_rgba(37,211,102,0.5)] text-white font-black py-4 px-4 rounded-xl flex items-center justify-center gap-3 transition-all active:scale-[0.98] min-h-[52px] relative z-10"
         aria-label="Share coupon code on WhatsApp"
       >
-        <Share2 size={18} />
+        <Share2 size={20} />
         Share on WhatsApp
       </button>
     </motion.div>

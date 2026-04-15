@@ -264,22 +264,120 @@
   <script type="module" src="/src/main.tsx"></script>
 
   <!-- ============================================================
-       Inline Service Worker Registration - Idempotent
-       Only registers SW, NO reload logic (handled in main.tsx)
+       Asset Load Detector - Safe Mode Fallback
+       Checks if the Vite module system loaded within 5 seconds.
+       If NOT, replaces #root with a Connection Error UI instead
+       of leaving a black/blank screen.
        ============================================================ -->
   <script>
-    // Minimal SW registration - main.tsx handles updates safely
-    if ('serviceWorker' in navigator && !window.__SW_REGISTERED) {
-      window.__SW_REGISTERED = true;
-      window.addEventListener('load', function () {
+    (function () {
+      var BOOT_TIMEOUT = 15000; // 15 seconds (first load after cache clear needs more time)
+      var bootTimedOut = false;
+      var bootComplete = false;
+
+      // Mark boot complete when main.tsx executes
+      window.__WORKPLEX_BOOT_COMPLETE = false;
+
+      function showConnectionError(errorType) {
+        if (bootComplete) return; // React already took over
+        if (bootTimedOut) return; // Already shown
+        bootTimedOut = true;
+
+        console.error('[WorkPlex] Boot failure detected:', errorType);
+
+        var root = document.getElementById('root');
+        if (!root) return;
+
+        // Hide splash
+        var splash = document.getElementById('workplex-splash');
+        if (splash) {
+          splash.style.opacity = '0';
+          splash.style.transition = 'opacity 0.3s ease-out';
+          setTimeout(function () {
+            if (splash.parentNode) splash.parentNode.removeChild(splash);
+          }, 350);
+        }
+
+        // Show Safe Mode UI
+        root.innerHTML =
+          '<div style="min-height:100vh;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;font-family:system-ui,-apple-system,sans-serif;color:#fff;text-align:center;">' +
+          '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:1.5rem;">' +
+          '<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>' +
+          '<line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>' +
+          '</svg>' +
+          '<h1 style="font-size:1.5rem;font-weight:700;margin-bottom:0.5rem;">Connection Error</h1>' +
+          '<p style="color:#9CA3AF;margin-bottom:0.25rem;max-width:28rem;">The development server is unreachable or modules failed to load.</p>' +
+          '<p style="color:#6B7280;font-size:0.75rem;margin-bottom:1.5rem;font-family:monospace;">' + errorType + '</p>' +
+          '<div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">' +
+          '<button onclick="window.location.reload()" style="background:#E8B84B;color:#000;font-weight:600;padding:0.75rem 1.5rem;border-radius:0.5rem;border:none;cursor:pointer;font-size:0.875rem;">Refresh Page</button>' +
+          '<button id="wp-troubleshoot-btn" style="background:transparent;color:#9CA3AF;font-weight:600;padding:0.75rem 1.5rem;border-radius:0.5rem;border:1px solid #374151;cursor:pointer;font-size:0.875rem;">Troubleshoot</button>' +
+          '</div>' +
+          '<div id="wp-troubleshoot-info" style="display:none;margin-top:1.5rem;text-align:left;background:#111827;padding:1rem;border-radius:0.5rem;font-size:0.75rem;color:#9CA3AF;max-width:32rem;">' +
+          '<p style="margin-bottom:0.5rem;"><strong style="color:#E8B84B;">Quick checks:</strong></p>' +
+          '<ul style="list-style:disc;padding-left:1.25rem;line-height:1.8;">' +
+          '<li>Is the dev server running? Run: <code style="color:#F59E0B;">npm run dev</code></li>' +
+          '<li>Check the port matches (default: <code style="color:#F59E0B;">localhost:2532</code>)</li>' +
+          '<li>Open DevTools (F12) > Network tab > look for RED entries</li>' +
+          '<li>Try a deep clean: <code style="color:#F59E0B;">npm run deep-clean</code></li>' +
+          '</ul>' +
+          '</div>' +
+          '</div>';
+
+        // Attach troubleshoot handler
         setTimeout(function () {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then(function (reg) { console.log('[SW] Registered'); })
-            .catch(function (err) { console.warn('[SW] Registration failed (non-critical):', err); });
-        }, 2000);
+          var btn = document.getElementById('wp-troubleshoot-btn');
+          var info = document.getElementById('wp-troubleshoot-info');
+          if (btn && info) {
+            btn.addEventListener('click', function () {
+              info.style.display = info.style.display === 'none' ? 'block' : 'none';
+            });
+          }
+        }, 100);
+      }
+
+      // Boot timeout timer
+      var timer = setTimeout(function () {
+        if (!window.__WORKPLEX_BOOT_COMPLETE) {
+          showConnectionError('BOOT_TIMEOUT: Modules did not load within ' + (BOOT_TIMEOUT / 1000) + 's');
+        }
+      }, BOOT_TIMEOUT);
+
+      // Also listen for Vite HMR errors via the dev server
+      window.addEventListener('error', function (e) {
+        if (e.message && (
+          e.message.includes('Failed to fetch') ||
+          e.message.includes('Failed to resolve') ||
+          e.message.includes('Failed to load module') ||
+          e.message.includes('NetworkError') ||
+          (e.target && e.target.tagName === 'SCRIPT' && e.target.src)
+        )) {
+          clearTimeout(timer);
+          showConnectionError('MODULE_LOAD_ERROR: ' + (e.message || 'Script failed to load'));
+        }
+      }, true);
+
+      // Mark boot complete flag (main.tsx will set window.__WORKPLEX_BOOT_COMPLETE = true)
+      Object.defineProperty(window, '__WORKPLEX_BOOT_COMPLETE', {
+        set: function (val) {
+          if (val === true) {
+            bootComplete = true;
+            clearTimeout(timer);
+          }
+        },
+        get: function () {
+          return bootComplete;
+        },
+        configurable: true
       });
-    }
+    })();
   </script>
+
+  <!-- ============================================================
+       Service Worker Registration - REMOVED
+       Moved to main.tsx for centralized, idempotent registration.
+       Having it in both places caused race conditions and infinite
+       reload loops. See main.tsx > "Service Worker Registration"
+       ============================================================ -->
 </body>
 
 </html>

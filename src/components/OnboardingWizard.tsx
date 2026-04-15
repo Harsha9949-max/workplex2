@@ -21,10 +21,10 @@ const STEPS = {
   7: Step7Agreement,
 };
 
-export default function OnboardingWizard({ user }) {
+export default function OnboardingWizard({ user }: { user: any }) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(2);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

@@ -16,8 +16,8 @@ const Step1Phone = ({ onVerified, onExistingUser }) => {
   const [recaptchaReady, setRecaptchaReady] = useState(false);
   const [confirmationResult, setConfirmationResult] = useState(null);
 
-  const otpInputsRef = useRef([]);
-  const recaptchaVerifierRef = useRef(null);
+  const otpInputsRef = useRef<HTMLInputElement[]>([]);
+  const recaptchaVerifierRef = useRef<any>(null);
 
   useEffect(() => {
     initRecaptcha();
@@ -289,7 +289,7 @@ const Step1Phone = ({ onVerified, onExistingUser }) => {
                     {otp.map((digit, index) => (
                       <input
                         key={index}
-                        ref={(el) => (otpInputsRef.current[index] = el)}
+                        ref={(el) => { if (el) otpInputsRef.current[index] = el; }}
                         type="text"
                         inputMode="numeric"
                         maxLength={1}

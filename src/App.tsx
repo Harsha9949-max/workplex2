@@ -146,7 +146,7 @@ import {
 } from 'recharts';
 
 // --- Constants & Types ---
-const AES_SECRET = (import.meta as any).env?.VITE_AES_SECRET || 'fallback-secret';
+const AES_SECRET = (import.meta.env?.VITE_AES_SECRET) ?? 'fallback-secret';
 const VENTURES = ['BuyRix', 'Vyuma', 'TrendyVerse', 'Growplex'] as const;
 type Venture = typeof VENTURES[number];
 
@@ -173,7 +173,7 @@ interface UserData {
   lastActiveDate?: string;
   badges?: string[];
   totalTasksCompleted?: number;
-  role: 'Marketer' | 'Lead Marketer' | 'Manager' | 'Sub-Admin' | 'Admin';
+  role: string;
   contractSigned: boolean;
   joinedAt: any;
   lastActiveAt: any;
@@ -526,15 +526,10 @@ class ErrorBoundary extends React.Component<any, any> {
 }
 
 export default function App() {
-  // Remove splash screen when React is confirmed active
-  useEffect(() => {
-    const splash = document.getElementById('workplex-splash');
-    if (splash) {
-      splash.style.opacity = '0';
-      splash.style.transition = 'opacity 0.4s ease-out';
-      setTimeout(() => splash.remove(), 500);
-    }
-  }, []);
+  // NOTE: Splash screen removal is now handled exclusively in main.tsx
+  // AFTER React root.render() completes. This prevents a race condition
+  // where App.tsx's useEffect and main.tsx both try to remove the splash.
+  // Keeping this comment for architectural clarity.
 
   return (
     <ErrorBoundary>
@@ -844,7 +839,7 @@ function PartnerDashboardWrapper() {
   return <PartnerDashboard user={user} />;
 }
 
-function MainApp() {
+export function MainApp() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [onboardingStep, setOnboardingStep] = useState(0); // 0: Auth Selection, 1-7: Steps
@@ -1669,7 +1664,7 @@ function HomeDashboard({ user }: { user: FirebaseUser }) {
       ) : activeTab === 'tasks' && userData ? (
         <TasksScreen user={user} userData={userData as UserData} />
       ) : activeTab === 'wallet' && userData ? (
-        <WalletScreen userData={userData as UserData} />
+        <WalletScreen user={user!} />
       ) : activeTab === 'catalog' && userData ? (
         <div className="p-6 pb-32">
           <div className="flex justify-between items-center mb-6">
@@ -1837,7 +1832,7 @@ function NavButton({ active, icon, label, onClick }: { active: boolean, icon: Re
   return (
     <button onClick={onClick} className="flex flex-col items-center gap-1">
       <div className={`transition-all ${active ? 'text-[#E8B84B]' : 'text-gray-600'}`}>
-        {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: active ? 2.5 : 2 })}
+        {React.cloneElement(icon as React.ReactElement, { size: 24, strokeWidth: active ? 2.5 : 2 } as any)}
       </div>
       <span className={`text-[10px] font-bold uppercase tracking-widest ${active ? 'text-[#E8B84B]' : 'text-gray-600'}`}>
         {label}

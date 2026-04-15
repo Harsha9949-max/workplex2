@@ -229,7 +229,13 @@ const HomeDashboard: React.FC<HomeDashboardProps> = ({ user }) => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] pb-24">
+    <div className="min-h-screen bg-[#0A0A0A] pb-24 relative overflow-hidden">
+      {/* Glow Orbs Background - Obsidian Foundry */}
+      <div className="absolute inset-0 pointer-events-none opacity-40 z-0">
+        <div className="absolute top-0 right-[-100px] w-[500px] h-[500px] bg-[#00C9A7]/5 rounded-full blur-[120px]" />
+        <div className="absolute top-[40%] left-[-100px] w-[600px] h-[600px] bg-[#EEB84B]/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: `linear-gradient(rgba(229,226,225,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(229,226,225,0.2) 1px, transparent 1px)`, backgroundSize: '40px 40px', maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)', WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)' }} />
+      </div>
       {/* Connection Status Banner */}
       {connectionStatus === 'reconnecting' && (
         <motion.div
